@@ -8,7 +8,7 @@ app.get('/', (req, res) => {
 });
 
 // API endpoint mẫu
-app.get('/api/users', (req, res) => {
+app.use('/api/users', (req, res) => {
     res.json([{ id: 1, name: 'John Doe' }, { id: 2, name: 'Jane Doe' }]);
 });
 
