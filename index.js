@@ -13,29 +13,11 @@ require('./models/mediaPost');
 require('./models/comment');
 
 // Import routes
+app.use("/api-docs", require("./routes/swagger")); 
+
 app.use('/api/auth', require('./routes/user')); 
 app.use('/api/media', require('./routes/mediaPost')); 
 app.use('/api/comment', require('./routes/comment'));
-
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsDoc = require("swagger-jsdoc");
-require("./docs/swagger"); // Import file Swagger (có thể import thêm nhiều file khác)
-
-// Cấu hình Swagger
-const swaggerOptions = {
-    definition: {
-        openapi: "3.0.0",
-        info: {
-            title: "LinkUp API",
-            version: "1.0.0",
-            description: "API documentation for LinkUp"
-        }
-    },
-    apis: ["./docs/*.js"] // Chỉ định các file Swagger
-};
-
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Kết nối DB và đồng bộ Sequelize
 connectDB().then(() => {
