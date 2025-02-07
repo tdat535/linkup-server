@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user'); // Assuming you have a User model
 
@@ -19,7 +19,7 @@ const register = async (userData) => {
 
 const login = async (userData) => {
     try {
-        const user = await User.findOne({ email: userData.email });
+        const user = await User.findOne({ where: { email: userData.email } }); 
         if (!user) {
             throw new Error('User not found');
         }
