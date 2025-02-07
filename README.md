@@ -11,26 +11,6 @@ LinkUp API là một backend được xây dựng bằng Node.js và Express, s�
 - JSON Web Token (JWT)
 - bcryptjs (Mã hóa mật khẩu)
 - dotenv (Quản lý biến môi trường)
-## 📂 Cấu trúc dự án
-
-```sh
-Linkup-api/
-├── config/
-│   └── config.json
-├── controllers/
-│   └── userController.js
-├── middlewares/
-│   └── authMiddleware.js
-├── models/
-│   └── user.js
-├── routes/
-│   └── userRoutes.js
-├── services/
-│   └── userService.js
-├── .env
-├── app.js
-└── package.json
-```
 
 ## 📋 Các tính năng
 
@@ -49,12 +29,13 @@ Linkup-api/
    ```sh
    git clone https://github.com/your-username/linkup-api.git
    cd linkup-api
-   
-Cài đặt dependencies:
+   ```
+2. Cài đặt dependencies:
    ```sh
    npm install
+   ```
 
-Tạo file .env và cấu hình như sau:
+3. Tạo file .env và cấu hình như sau:
    ```sh
    DB_NAME=your_database_name
    DB_USER=your_database_user
@@ -65,10 +46,14 @@ Tạo file .env và cấu hình như sau:
    JWT_SECRET=your_jwt_secret
    JWT_REFRESH_SECRET=your_refresh_secret
    PORT=3000
+   ```
 
-Chạy project bằng nodemon để tự động restart khi có thay đổi:
+4.Chạy project bằng nodemon để tự động restart khi có thay đổi:
    ```sh
    npm start
+   ```
 
 📌 API Endpoints documents: 
-https://linkup-server-rust.vercel.app/api-docs
+   ```sh
+   https://linkup-server-rust.vercel.app/api-docs
+   ```
