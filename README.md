@@ -23,17 +23,22 @@ Cài đặt dependencies:
 npm install
 Tạo file .env và cấu hình như sau:
 
-env
-Copy
-Edit
 DB_NAME=your_database_name
+
 DB_USER=your_database_user
+
 DB_PASSWORD=your_database_password
+
 DB_HOST=your_database_host
+
 DB_PORT=3306
+
 DB_DIALECT=mysql
+
 JWT_SECRET=your_jwt_secret
+
 JWT_REFRESH_SECRET=your_refresh_secret
+
 PORT=3000
 
 Chạy project:
