@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
+const mysql2 = require('mysql2');            // Thêm mysql2 nếu cần
 
 // Tạo kết nối đến cơ sở dữ liệu MySQL bằng biến môi trường
 const sequelize = new Sequelize(
@@ -10,6 +11,7 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: process.env.DB_DIALECT,
+    dialectModule: mysql2,
   }
 );
 
