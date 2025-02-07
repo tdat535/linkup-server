@@ -9,7 +9,7 @@ const User = sequelize.define('User', {
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   password: {
     type: DataTypes.STRING,

@@ -5,13 +5,17 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
     try {
-        const user = await register(req.body);
-        res.status(200).send({
-            isSuccess:true,
-            status: 200,
-            message: "Đăng ký người dùng thành công",
-            data: user
-        });
+        const result = await register(req.body);
+
+        if (result.error) {
+            return res.status(result.status).send({
+                isSuccess: false,
+                status: result.status,
+                message: result.error,
+            });
+        }
+
+        res.status(200).send(result);
     } catch (error) {
         res.status(400).send('Something went wrong!');
         console.log(error);    
@@ -21,17 +25,26 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     try {
         const result = await login(req.body);
-        res.status(200).send({
-            isSuccess:true,
-            status: 200,
-            message: "Đăng nhập thành công",
-            data: result
+
+        if (result.error) {
+            return res.status(result.status).send({
+                isSuccess: false,
+                status: result.status,
+                message: result.error,
+            });
+        }
+
+        res.status(200).send(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({
+            isSuccess: false,
+            status: 500,
+            message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
         });
-        } catch (error) {
-            res.status(400).send('Something went wrong!');
-            console.log(error);  
     }
 });
+
 
 router.post("/refresh", async (req, res) => {
     try {

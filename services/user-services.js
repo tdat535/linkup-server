@@ -7,20 +7,31 @@ const RefreshToken = require('../models/refreshToken');
 
 const register = async (userData) => {
     try {
+        // Kiểm tra xem username đã tồn tại trong database chưa
+        const existingUser = await User.findOne({ where: { username: userData.username } });
+
+        if (existingUser) {
+            return { error: "Username đã tồn tại", status: 400 };
+        }
+
         const hashedPassword = await bcrypt.hash(userData.password, 10);
         const newUser = new User({
             username: userData.username,
-            email: userData.email,
             password: hashedPassword
         });
         await newUser.save();
         return { 
-            UserId: newUser.id,
-            Username: newUser.username,
-            Email: newUser.email || null,
-            UserImage: newUser.userImage || null,
-            SocialMedia: newUser.socialMedia || [],
-            UserType: newUser.userType || 'user',
+            isSuccess: true,
+            status: 200,
+            message: "Đăng ký thành công",
+            data: {
+                UserId: newUser.id,
+                Username: newUser.username,
+                Email: newUser.email || null,
+                UserImage: newUser.userImage || null,
+                SocialMedia: newUser.socialMedia || [],
+                UserType: newUser.userType || 'user',
+            }
          };
     } catch (error) {
         throw new Error('Error registering user: ' + error.message);
@@ -29,33 +40,44 @@ const register = async (userData) => {
 
 const login = async (userData) => {
     try {
-        const user = await User.findOne({ where: { email: userData.email } }); 
+        const user = await User.findOne({ where: { username: userData.username } });
+
+        // Kiểm tra nếu không tìm thấy người dùng
         if (!user) {
-            throw new Error('User not found');
+            return { error: "Người dùng ko tồn tại", status: 404 };
         }
+
+        // Kiểm tra mật khẩu
         const isPasswordValid = await bcrypt.compare(userData.password, user.password);
         if (!isPasswordValid) {
-            throw new Error('Invalid password');
+            return { error: "Sai mật khẩu", status: 401 };
         }
-        //const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+        // Tạo Access Token và Refresh Token
         const accessToken = generateAccessToken(user.id);
         const refreshToken = generateRefreshToken(user.id);
 
+        // Lưu refresh token vào database
         await RefreshToken.create({ token: refreshToken, userId: user.id });
 
-        return { 
-            AccesToken: accessToken,
-            RefreshToken: refreshToken, 
-            UserId: user.id,
-            Username: user.username,
-            Email: user.email || null,
-            UserImage: user.userImage || null,
-            SocialMedia: user.socialMedia || [],
-            UserType: user.userType || 'user',
-        }
+        return {
+            isSuccess: true,
+            status: 200,
+            message: "Đăng nhập thành công",
+            data: {
+                AccesToken: accessToken,
+                RefreshToken: refreshToken,
+                UserId: user.id,
+                Username: user.username,
+                Email: user.email || null,
+                UserImage: user.userImage || null,
+                SocialMedia: user.socialMedia || [],
+                UserType: user.userType || "user",
+            },
+        };
     } catch (error) {
-        throw new Error('Error logging in: ' + error.message);
+        console.error("Login Error:", error);
+        return { error: "Error logging in", status: 500 };
     }
 };
 
