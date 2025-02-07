@@ -1,8 +1,8 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
-const mysql2 = require('mysql2');            // Thêm mysql2 nếu cần
+const mysql2 = require('mysql2'); // Thêm mysql2 nếu cần
 
-// Tạo kết nối đến cơ sở dữ liệu MySQL bằng biến môi trường
+// Tạo kết nối đến cơ sở dữ liệu MySQL
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
@@ -12,12 +12,18 @@ const sequelize = new Sequelize(
     port: process.env.DB_PORT,
     dialect: process.env.DB_DIALECT,
     dialectModule: mysql2,
+    logging: false, // Tắt log query SQL trong console
   }
 );
 
 // Kiểm tra kết nối
-sequelize.authenticate()
-  .then(() => console.log('Connection has been established successfully.'))
-  .catch(err => console.error('Unable to connect to the database:', err));
+const connectDB = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Database connected successfully!');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+  }
+};  
 
-module.exports = sequelize;
+module.exports = { sequelize, connectDB };

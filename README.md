@@ -11,7 +11,38 @@ LinkUp API là một backend được xây dựng bằng Node.js và Express, s�
 - JSON Web Token (JWT)
 - bcryptjs (Mã hóa mật khẩu)
 - dotenv (Quản lý biến môi trường)
+## 📂 Cấu trúc dự án
 
+```sh
+Linkup-api/
+├── config/
+│   └── config.json
+├── controllers/
+│   └── userController.js
+├── middlewares/
+│   └── authMiddleware.js
+├── models/
+│   └── user.js
+├── routes/
+│   └── userRoutes.js
+├── services/
+│   └── userService.js
+├── .env
+├── app.js
+└── package.json
+```
+
+## 📋 Các tính năng
+
+- Đăng ký người dùng
+- Đăng nhập người dùng
+- Đăng bài viết
+- Bình luận bài viết
+- Sử dụng refresh token để cấp lại access token
+- Bảo mật bằng JWT và bcryptjs
+- Quản lý biến môi trường bằng dotenv
+- Sử dụng Sequelize để tương tác với MySQL
+- Sử dụng nodemon để tự động restart server khi có thay đổi
 ## 🚀 Cài đặt
 
 1. Clone repo:

@@ -1,6 +1,5 @@
-// models/user.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');  // Import kết nối
+const { sequelize } = require('../config/database');  // Import kết nối
 
 // Định nghĩa model User
 const User = sequelize.define('User', {
@@ -19,10 +18,5 @@ const User = sequelize.define('User', {
 }, {
   timestamps: true
 });
-
-// Tạo bảng nếu chưa tồn tại
-User.sync()
-  .then(() => console.log('User table has been created.'))
-  .catch(err => console.error('Error creating table:', err));
 
 module.exports = User;
