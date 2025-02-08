@@ -12,10 +12,6 @@
         "dest": "/index.js"
       },
       {
-        "src": "/swagger-ui/(.*)",
-        "dest": "/swagger-ui/$1"
-      },
-      {
         "src": "/(.*)",
         "dest": "/index.js"
       }
