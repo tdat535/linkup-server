@@ -16,7 +16,7 @@ const options = {
       },
     ],
   },
-  apis: ["./routes/*.js"], // Đường dẫn tới các file định nghĩa API
+  apis: ["routes/*.js"], // Xóa dấu `./`
 };
 
 const swaggerSpec = swaggerJsDoc(options);
