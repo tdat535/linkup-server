@@ -1,5 +1,8 @@
 require('dotenv').config();
 const express = require('express');
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+const path = require("path");  // 👉 THÊM DÒNG NÀY
 
 const { sequelize, connectDB } = require('./config/database');
 
@@ -17,6 +20,7 @@ app.use('/api/auth', require('./routes/user'));
 app.use('/api/media', require('./routes/mediaPost')); 
 app.use('/api/comment', require('./routes/comment'));
 
+// Cấu hình Swagger JSDoc
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -53,4 +57,3 @@ connectDB().then(() => {
 });
 
 module.exports = app;
-
