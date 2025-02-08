@@ -20,6 +20,7 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 // Gắn Swagger UI vào router
-router.use("/", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+router.use("/", swaggerUi.serve);
+router.get("/", swaggerUi.setup(swaggerDocs));
 
 module.exports = router;
