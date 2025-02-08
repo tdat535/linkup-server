@@ -11,24 +11,26 @@ const options = {
     },
     servers: [
       {
-        url: "https://linkup-server-rust.vercel.app",
+        url: "https://linkup-server-rust.vercel.app", // Đổi sang domain của Vercel
         description: "Vercel Server",
       },
     ],
   },
-  apis: ["routes/*.js", "docs/*.js"], // Load cả file Swagger cũ
+  apis: ["routes/*.js", "docs/*.js"], // Load tài liệu cũ
 };
 
 const swaggerSpec = swaggerJsDoc(options);
 
 const redocDocs = (app) => {
   app.get("/api-docs", redoc({ 
-    title: "API Docs", 
+    title: "API Documentation", 
     specUrl: "/api-docs.json" 
   }));
 
+  // Đảm bảo route này trả về JSON đúng
   app.get("/api-docs.json", (req, res) => {
-    res.json(swaggerSpec);
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerSpec);
   });
 
   console.log("Redoc available at /api-docs");

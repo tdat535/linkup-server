@@ -5,12 +5,12 @@ const { sequelize, connectDB } = require('./config/database');
 const app = express();
 app.use(express.json());
 
-// Import model để đảm bảo Sequelize thiết lập quan hệ
+// Import models
 require('./models/user');
 require('./models/mediaPost');
 require('./models/comment');
 
-// Import tài liệu API
+// Import API Docs
 require('./config/redoc')(app);
 
 app.use('/api/auth', require('./routes/user'));
