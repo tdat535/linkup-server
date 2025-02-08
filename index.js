@@ -21,11 +21,12 @@ const fs = require('fs');
 // Đọc file API document
 const apiSpec = JSON.parse(fs.readFileSync(path.join(__dirname, 'docs', 'api-documents.json'), 'utf8'));
 
-// Cấu hình Swagger UI
+// Cấu hình Swagger UI với customCssUrl
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(apiSpec, {
   swaggerOptions: {
-    url: '/docs/api-documents.json', // Đường dẫn đến file JSON
-  }
+    url: 'https://linkup-server-rust.vercel.app/docs/api-documents.json', // Dùng đường dẫn tuyệt đối
+  },
+  customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css',
 }));
 
 // Serve file API JSON
