@@ -15,5 +15,9 @@
       "src": "/(.*)",
       "dest": "/index.js"
     }
+    {
+      "src": "/docs/api-documents.json",
+      "dest": "/docs/api-documents.json"
+    }
   ]
 }
