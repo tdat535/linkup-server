@@ -15,27 +15,14 @@ app.use('/api/media', require('./routes/mediaPost'));
 app.use('/api/comment', require('./routes/comment'));
 
 const path = require('path');
-const redoc = require('redoc-express');
+const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
 
-// Kiểm tra file JSON trước khi gửi
-app.get('/docs/api-documents.json', (req, res) => {
-  const filePath = path.join(__dirname, 'docs', 'api-documents.json');
+// Đọc file API document
+const apiSpec = JSON.parse(fs.readFileSync(path.join(__dirname, 'docs', 'api-documents.json'), 'utf8'));
 
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: 'File not found' });
-  }
-
-  res.setHeader('Content-Type', 'application/json');
-  res.sendFile(filePath);
-});
-
-// Serve API documentation using Redoc
-app.get('/docs', redoc({
-  title: 'LinkUp API Docs',
-  specUrl: '/docs/api-documents.json',
-}));
-
+// Serve Swagger UI
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(apiSpec));
 
 // Kết nối DB và chạy server
 connectDB().then(() => {
