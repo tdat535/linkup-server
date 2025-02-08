@@ -1,5 +1,5 @@
 /**
- * @swagger
+ * @openapi
  * /api/auth/register:
  *   post:
  *     summary: Đăng ký người dùng mới
@@ -24,7 +24,7 @@
  */
 
 /**
- * @swagger
+ * @openapi
  * /api/auth/login:
  *   post:
  *     summary: Đăng nhập người dùng
