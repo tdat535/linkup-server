@@ -26,8 +26,18 @@ const options = {
 const swaggerSpec = swaggerJsdoc(options);
 
 // 👉 Phục vụ Swagger UI từ `swagger-ui-dist`
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use("/swagger-ui", express.static(swaggerUiDist)); // 🟢 Phục vụ file tĩnh
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    swaggerOptions: {
+      docExpansion: "none",
+      url: "/swagger-ui/swagger-ui-bundle.js", // Chỉ định tệp JS cụ thể
+      layout: "BaseLayout",
+    },
+  })
+);
+app.use("/swagger-ui", express.static(path.join(__dirname, "public/swagger-ui")));
 
 // Route mặc định
 app.get("/", (req, res) => {
