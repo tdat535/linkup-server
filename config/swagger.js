@@ -26,10 +26,19 @@ const swaggerDocs = (app) => {
     "/api-docs",
     swaggerUi.serve,
     swaggerUi.setup(swaggerSpec, {
+      swaggerOptions: {
+        url: "https://linkup-server-rust.vercel.app/api-docs.json", // Load JSON từ server
+      },
       customCssUrl:
         "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css",
     })
   );
+
+  // Thêm endpoint để trả về JSON cho Swagger UI từ CDN
+  app.get("/api-docs.json", (req, res) => {
+    res.json(swaggerSpec);
+  });
+
   console.log("Swagger docs available at /api-docs");
 };
 
