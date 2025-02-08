@@ -12,7 +12,7 @@
       "dest": "/index.js"
     },
     {
-      "src": "/swagger/(.*)",
+      "src": "/(.*)",
       "dest": "/index.js"
     },
     {
