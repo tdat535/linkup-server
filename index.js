@@ -1,24 +1,14 @@
-require('dotenv').config();
-const express = require('express');
+const express = require("express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const path = require("path");
+const { sequelize, connectDB } = require("./config/database");
 
-const { sequelize, connectDB } = require('./config/database');
+// Import thư viện swagger-ui-dist để phục vụ file tĩnh
+const swaggerUiDist = require("swagger-ui-dist").absolutePath();
 
 const app = express();
-
 app.use(express.json());
-
-// Import model để đảm bảo Sequelize thiết lập quan hệ
-require('./models/user');
-require('./models/mediaPost');
-require('./models/comment');
-
-// Import routes
-app.use('/api/auth', require('./routes/user')); 
-app.use('/api/media', require('./routes/mediaPost')); 
-app.use('/api/comment', require('./routes/comment'));
 
 // Cấu hình Swagger JSDoc
 const options = {
@@ -30,34 +20,29 @@ const options = {
       description: "Swagger UI hosted on Vercel",
     },
   },
-  apis: [path.join(__dirname, "docs/swagger.js")], // Đọc tài liệu từ docs/swagger.js
+  apis: [path.join(__dirname, "docs/swagger.js")],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
-// 👉 Cấu hình middleware tùy chỉnh cho Swagger UI trên Vercel
-app.use("/api-docs", (req, res, next) => {
-  if (req.path === "/") {
-    return res.send(swaggerUi.generateHTML(swaggerSpec));
-  }
-  return swaggerUi.serve(req, res, next);
-});
+// 👉 Phục vụ Swagger UI từ `swagger-ui-dist`
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/swagger-ui", express.static(swaggerUiDist)); // 🟢 Phục vụ file tĩnh
 
 // Route mặc định
 app.get("/", (req, res) => {
   res.redirect("/api-docs");
 });
 
-// Kết nối DB và đồng bộ Sequelize
+// Kết nối DB và khởi động server
 connectDB().then(() => {
-  sequelize.sync({ alter: true }) // `alter: true` để tự động cập nhật bảng mà không mất dữ liệu
-    .then(() => console.log('✅ Đã đồng bộ database'))
-    .catch(err => console.error('❌ Có lỗi khi đồng bộ database:', err));
+  sequelize.sync({ alter: true })
+    .then(() => console.log("✅ Database đã đồng bộ"))
+    .catch(err => console.error("❌ Lỗi khi đồng bộ database:", err));
 
-  // Khởi động server
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
-    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🚀 Server đang chạy trên cổng ${PORT}`);
   });
 });
 
