@@ -10,8 +10,8 @@ require('./models/user');
 require('./models/mediaPost');
 require('./models/comment');
 
-// Import API Docs
-require('./config/redoc')(app);
+const swaggerDocs = require('./config/redoc');
+swaggerDocs(app);
 
 app.use('/api/auth', require('./routes/user'));
 app.use('/api/media', require('./routes/mediaPost'));

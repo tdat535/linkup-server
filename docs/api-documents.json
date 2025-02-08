@@ -1,5 +1,16 @@
 {
     "openapi": "3.0.0",
+    "info": {
+        "title": "LinkUp API",
+        "version": "1.0.0",
+        "description": "API documentation for LinkUp"
+    },
+    "servers": [
+        {
+            "url": "https://linkup-server-rust.vercel.app",
+            "description": "Vercel Server"
+        }
+    ],
     "paths": {
         "/api/auth/register": {
             "post": {
@@ -11,27 +22,17 @@
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "username": {
-                                        "type": "string"
-                                    },
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    }
+                                    "username": { "type": "string" },
+                                    "email": { "type": "string" },
+                                    "password": { "type": "string" }
                                 }
                             }
                         }
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Đăng ký thành công"
-                    },
-                    "400": {
-                        "description": "Lỗi đầu vào không hợp lệ"
-                    }
+                    "200": { "description": "Đăng ký thành công" },
+                    "400": { "description": "Lỗi đầu vào không hợp lệ" }
                 }
             }
         },
@@ -45,24 +46,16 @@
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    }
+                                    "email": { "type": "string" },
+                                    "password": { "type": "string" }
                                 }
                             }
                         }
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Đăng nhập thành công"
-                    },
-                    "400": {
-                        "description": "Sai email hoặc mật khẩu"
-                    }
+                    "200": { "description": "Đăng nhập thành công" },
+                    "400": { "description": "Sai email hoặc mật khẩu" }
                 }
             }
         }
