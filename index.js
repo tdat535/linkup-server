@@ -21,8 +21,18 @@ const fs = require('fs');
 // Đọc file API document
 const apiSpec = JSON.parse(fs.readFileSync(path.join(__dirname, 'docs', 'api-documents.json'), 'utf8'));
 
-// Serve Swagger UI
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(apiSpec));
+// Cấu hình Swagger UI
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(apiSpec, {
+  swaggerOptions: {
+    url: '/docs/api-documents.json', // Đường dẫn đến file JSON
+  }
+}));
+
+// Serve file API JSON
+app.get('/docs/api-documents.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(path.join(__dirname, 'docs', 'api-documents.json'));
+});
 
 // Kết nối DB và chạy server
 connectDB().then(() => {
