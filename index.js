@@ -10,12 +10,32 @@ require('./models/user');
 require('./models/mediaPost');
 require('./models/comment');
 
-const swaggerDocs = require('./config/redoc');
-swaggerDocs(app);
-
 app.use('/api/auth', require('./routes/user'));
 app.use('/api/media', require('./routes/mediaPost'));
 app.use('/api/comment', require('./routes/comment'));
+
+const path = require('path');
+const redoc = require('redoc-express');
+const fs = require('fs');
+
+// Kiểm tra file JSON trước khi gửi
+app.get('/docs/api-documents.json', (req, res) => {
+  const filePath = path.join(__dirname, 'docs', 'api-documents.json');
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(filePath);
+});
+
+// Serve API documentation using Redoc
+app.get('/docs', redoc({
+  title: 'LinkUp API Docs',
+  specUrl: '/docs/api-documents.json',
+}));
+
 
 // Kết nối DB và chạy server
 connectDB().then(() => {
