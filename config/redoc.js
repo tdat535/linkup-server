@@ -1,39 +1,9 @@
-const redoc = require("redoc-express");
-const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("../docs/api-documents.json"); // Load file JSON trực tiếp
 
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "LinkUp API",
-      version: "1.0.0",
-      description: "API documentation for LinkUp",
-    },
-    servers: [
-      {
-        url: "https://linkup-server-rust.vercel.app", // Đổi sang domain của Vercel
-        description: "Vercel Server",
-      },
-    ],
-  },
-  apis: ["routes/*.js", "docs/*.js"], // Load tài liệu cũ
+const swaggerDocs = (app) => {
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  console.log("✅ Swagger docs available at /api-docs");
 };
 
-const swaggerSpec = swaggerJsDoc(options);
-
-const redocDocs = (app) => {
-  app.get("/api-docs", redoc({ 
-    title: "API Documentation", 
-    specUrl: "/api-docs.json" 
-  }));
-
-  // Đảm bảo route này trả về JSON đúng
-  app.get("/api-docs.json", (req, res) => {
-    res.setHeader("Content-Type", "application/json");
-    res.send(swaggerSpec);
-  });
-
-  console.log("Redoc available at /api-docs");
-};
-
-module.exports = redocDocs;
+module.exports = swaggerDocs;
