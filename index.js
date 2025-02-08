@@ -22,7 +22,7 @@ const fs = require('fs');
 const apiSpec = JSON.parse(fs.readFileSync(path.join(__dirname, 'docs', 'api-documents.json'), 'utf8'));
 
 // Cấu hình Swagger UI với customCssUrl
-app.use('/swagger', swaggerUi.serve, swaggerUi.setup(apiSpec, {
+app.get('/swagger', swaggerUi.serve, swaggerUi.setup(apiSpec, {
   swaggerOptions: {
     url: 'https://linkup-server-rust.vercel.app/docs/api-documents.json', // Dùng đường dẫn tuyệt đối
   },
