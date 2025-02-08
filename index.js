@@ -13,11 +13,31 @@ require('./models/mediaPost');
 require('./models/comment');
 
 // Import routes
-app.use("/api-docs", require("./routes/swagger")); 
-
 app.use('/api/auth', require('./routes/user')); 
 app.use('/api/media', require('./routes/mediaPost')); 
 app.use('/api/comment', require('./routes/comment'));
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "API Documentation",
+      version: "1.0.0",
+      description: "Swagger UI hosted on Vercel",
+    },
+  },
+  apis: [path.join(__dirname, "docs/swagger.js")], // Đọc tài liệu từ docs/swagger.js
+};
+
+const swaggerSpec = swaggerJsdoc(options);
+
+// Cấu hình Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Route mặc định
+app.get("/", (req, res) => {
+  res.redirect("/api-docs");
+});
 
 // Kết nối DB và đồng bộ Sequelize
 connectDB().then(() => {
