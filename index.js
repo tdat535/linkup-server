@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-const path = require("path");  // 👉 THÊM DÒNG NÀY
+const path = require("path");
 
 const { sequelize, connectDB } = require('./config/database');
 
@@ -35,8 +35,13 @@ const options = {
 
 const swaggerSpec = swaggerJsdoc(options);
 
-// Cấu hình Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// 👉 Cấu hình middleware tùy chỉnh cho Swagger UI trên Vercel
+app.use("/api-docs", (req, res, next) => {
+  if (req.path === "/") {
+    return res.send(swaggerUi.generateHTML(swaggerSpec));
+  }
+  return swaggerUi.serve(req, res, next);
+});
 
 // Route mặc định
 app.get("/", (req, res) => {
