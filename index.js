@@ -14,26 +14,24 @@ app.use('/api/auth', require('./routes/user'));
 app.use('/api/media', require('./routes/mediaPost'));
 app.use('/api/comment', require('./routes/comment'));
 
-const path = require('path');
-const swaggerUi = require('swagger-ui-express');
-const fs = require('fs');
-
 // Đọc file API document
-const apiSpec = JSON.parse(fs.readFileSync(path.join(__dirname, 'docs', 'api-documents.json'), 'utf8'));
-
-// Cấu hình Swagger UI với customCssUrl
-app.get('/swagger', swaggerUi.serve, swaggerUi.setup(apiSpec, {
-  swaggerOptions: {
-    url: 'https://linkup-server-rust.vercel.app/docs/api-documents.json', // Dùng đường dẫn tuyệt đối
-  },
-  customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css',
-}));
-
-// Serve file API JSON
+const path = require('path');
+const redoc = require('redoc-express');
+const fs = require('fs');
+// Kiểm tra file JSON trước khi gửi
 app.get('/docs/api-documents.json', (req, res) => {
+  const filePath = path.join(__dirname, 'docs', 'api-documents.json');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
   res.setHeader('Content-Type', 'application/json');
-  res.sendFile(path.join(__dirname, 'docs', 'api-documents.json'));
+  res.sendFile(filePath);
 });
+// Serve API documentation using Redoc
+app.get('/docs', redoc({
+  title: 'LinkUp API Docs',
+  specUrl: '/docs/api-documents.json',
+}));
 
 // Kết nối DB và chạy server
 connectDB().then(() => {
