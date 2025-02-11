@@ -55,5 +55,5 @@ LinkUp API là một backend được xây dựng bằng Node.js và Express, s�
 
 📌 API Endpoints documents: 
    ```sh
-   https://linkup-server-rust.vercel.app/api-docs
+   https://linkup-server-rust.vercel.app/docs
    ```
