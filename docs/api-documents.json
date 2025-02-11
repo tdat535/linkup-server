@@ -4,7 +4,10 @@
         "title": "LinkUp API",
         "version": "1.0.0",
         "description": "API documentation for LinkUp",
-        "base-url": "https://linkup-server-rust.vercel.app"
+        "contact": {
+            "name": "LinkUp",
+            "url": "https://linkup-server-rust.vercel.app"
+        }
     },
     "servers": [
         {
