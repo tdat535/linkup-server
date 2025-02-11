@@ -80,6 +80,118 @@
                     }
                 }
             }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "summary": "Tạo access token mới từ refresh token",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "RefreshToken": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo thành công access token mới"
+                    },
+                    "400": {
+                        "description": "RefreshToken hết hạn hoặc không tồn tại"
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "summary": "Đăng xuất người dùng",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "RefreshToken": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Đăng xuất thành công"
+                    },
+                    "400": {
+                        "description": "RefreshToken hết hạn hoặc không tồn tại"
+                    }
+                }
+            }
+        },
+        "/api/media/getPost": {
+            "get": {
+                "summary": "Lấy danh sách bài viết",
+                "tags": [
+                    "Media"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lấy danh sách bài viết thành công"
+                    },
+                    "400": {
+                        "description": "Lỗi không xác định"
+                    }
+                }
+            }
+        },
+        "/api/media/upPost": {
+            "post": {
+                "summary": "Tạo bài viết mới",
+                "tags": [
+                    "Media"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "image": {
+                                        "type": "string"
+                                    },
+                                    "user_id": {
+                                        "type": "int"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo bài viết thành công"
+                    },
+                    "400": {
+                        "description": "Lỗi đầu vào không hợp lệ"
+                    }
+                }
+            }
         }
     }
 }
