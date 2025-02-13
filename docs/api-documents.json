@@ -3,7 +3,11 @@
     "info": {
         "title": "LinkUp API",
         "version": "1.0.0",
-        "description": "API documentation for LinkUp"
+        "description": "API documentation for LinkUp",
+        "contact": {
+            "name": "LinkUp",
+            "url": "https://linkup-server-rust.vercel.app"
+        }
     },
     "servers": [
         {
@@ -192,6 +196,130 @@
                     }
                 }
             }
+        },
+        "/api/comment/getComment": {
+            "get": {
+            "summary": "Lấy danh sách comment",
+            "tags": [
+                "Comment"
+            ],
+            "parameters": [
+                {
+                "name": "post_id",
+                "in": "query",
+                "required": true,
+                "schema": {
+                    "type": "int"
+                },
+                "description": "ID của bài viết"
+                }
+            ],
+            "responses": {
+                "200": {
+                "description": "Lấy danh sách comment thành công"
+                },
+                "400": {
+                "description": "Lỗi không xác định"
+                }
+            }
+            }
+        },
+        "/api/comment/createComment": {
+            "post": {
+                "summary": "Tạo bình luận mới cho bài viết",
+                "tags": [
+                    "Comment"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "user_id": {
+                                        "type": "int"
+                                    },
+                                    "post_id": {
+                                        "type": "int"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo bình luận thành công"
+                    },
+                    "400": {
+                        "description": "Lỗi đầu vào không hợp lệ"
+                    }
+                }
+            }
+        },
+        "/api/like/getLikes": {
+            "get": {
+                "summary": "Lấy danh sách lượt thích của bài viết",
+                "tags": [
+                    "Like"
+                ],
+                "parameters": [
+                    {
+                        "name": "post_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "int"
+                        },
+                        "description": "ID của bài viết"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lấy danh sách lượt thích thành công"
+                    },
+                    "400": {
+                        "description": "Lỗi không xác định"
+                    }
+                }
+            }
+        },
+        "/api/like/createLike": {
+            "post": {
+                "summary": "Tạo lượt thích cho bài viết",
+                "tags": [
+                    "Like"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "user_id": {
+                                        "type": "int"
+                                    },
+                                    "post_id": {
+                                        "type": "int"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo like thành công"
+                    },
+                    "400": {
+                        "description": "Lỗi đầu vào không hợp lệ"
+                    }
+                }
+            }
         }
+        
     }
 }

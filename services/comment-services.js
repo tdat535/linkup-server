@@ -22,10 +22,16 @@ const createComment = async (comment) => {
 };
 
 const getComments = async (post_id) => {
+    if (!post_id) {
+        return {
+            error: 'post_id is required to get comments'
+        };
+    }
+
     try {
         const comments = await Comment.findAll({
-            where: { post_id }, // Lọc theo post_id
-            order: [['createdAt', 'DESC']] // Sắp xếp theo thời gian mới nhất
+            where: { post_id }, 
+            order: [['createdAt', 'DESC']] 
         });
 
         return {
