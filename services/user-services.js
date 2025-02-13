@@ -20,18 +20,13 @@ const register = async (userData) => {
             password: hashedPassword
         });
         await newUser.save();
-        return { 
-            isSuccess: true,
-            status: 200,
-            message: "Đăng ký thành công",
-            data: {
-                UserId: newUser.id,
-                Username: newUser.username,
-                Email: newUser.email || null,
-                UserImage: newUser.userImage || null,
-                SocialMedia: newUser.socialMedia || [],
-                UserType: newUser.userType || 'user',
-            }
+        return {
+            UserId: newUser.id,
+            Username: newUser.username,
+            Email: newUser.email || null,
+            UserImage: newUser.userImage || null,
+            SocialMedia: newUser.socialMedia || [],
+            UserType: newUser.userType || 'user',
          };
     } catch (error) {
         throw new Error('Error registering user: ' + error.message);
@@ -61,19 +56,14 @@ const login = async (userData) => {
         await RefreshToken.create({ token: refreshToken, userId: user.id });
 
         return {
-            isSuccess: true,
-            status: 200,
-            message: "Đăng nhập thành công",
-            data: {
-                AccesToken: accessToken,
-                RefreshToken: refreshToken,
-                UserId: user.id,
-                Username: user.username,
-                Email: user.email || null,
-                UserImage: user.userImage || null,
-                SocialMedia: user.socialMedia || [],
-                UserType: user.userType || "user",
-            },
+            AccesToken: accessToken,
+            RefreshToken: refreshToken,
+            UserId: user.id,
+            Username: user.username,
+            Email: user.email || null,
+            UserImage: user.userImage || null,
+            SocialMedia: user.socialMedia || [],
+            UserType: user.userType || "user",
         };
     } catch (error) {
         console.error("Login Error:", error);

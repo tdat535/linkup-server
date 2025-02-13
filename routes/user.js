@@ -14,8 +14,13 @@ router.post("/register", async (req, res) => {
                 message: result.error,
             });
         }
-
-        res.status(200).send(result);
+        res.status(200).send({
+            isSuccess: true,
+            status: 200,
+            message: "Đăng ký thành công",
+            data: result
+        });
+        
     } catch (error) {
         res.status(400).send('Something went wrong!');
         console.log(error);    
@@ -33,9 +38,13 @@ router.post("/login", async (req, res) => {
                 message: result.error,
             });
         }
-
-        res.status(200).send(result);
-    } catch (error) {
+        res.status(200).send({
+            isSuccess: true,
+            status: 200,
+            message: "Đăng nhập thành công",
+            data: result
+        });
+        } catch (error) {
         console.error(error);
         res.status(500).send({
             isSuccess: false,
@@ -51,7 +60,12 @@ router.post("/refresh", async (req, res) => {
         const { refreshToken } = req.body;
         const result = await createNewAccessToken(refreshToken);
 
-        res.status(200).send(result);
+        res.status(200).send({
+            isSuccess: true,
+            status: 200,
+            message: "Tạo access token thành công",
+            data: result
+        });
     } catch (error) {
         res.status(401).send({
             IsSuccess: false,
