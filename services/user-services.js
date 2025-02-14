@@ -56,7 +56,7 @@ const login = async (userData) => {
         await RefreshToken.create({ token: refreshToken, userId: user.id });
 
         return {
-            AccesToken: accessToken,
+            AccessToken: accessToken,
             RefreshToken: refreshToken,
             UserId: user.id,
             Username: user.username,
