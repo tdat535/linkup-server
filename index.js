@@ -17,6 +17,7 @@ app.use('/api/media', require('./routes/mediaPost'));
 app.use('/api/comment', require('./routes/comment'));
 app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
+app.use('/api/follow',require('./routes/follow'));
 
 // Đọc file API document
 const path = require('path');
