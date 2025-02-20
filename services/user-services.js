@@ -38,7 +38,7 @@ const login = async (userData) => {
         const user = await User.findOne({ where: { username: userData.username } });
 
         if (!user) {
-            return { error: "Người dùng ko tồn tại", status: 404 };
+            return { error: "Người dùng không tồn tại", status: 404 };
         }
 
         const isPasswordValid = await bcrypt.compare(userData.password, user.password);
@@ -49,8 +49,14 @@ const login = async (userData) => {
         const accessToken = generateAccessToken(user.id);
         const refreshToken = generateRefreshToken(user.id);
 
-        // 🔥 Sửa lỗi userId -> user_id
-        await RefreshToken.create({ token: refreshToken, user_id: user.id });
+        // 🔥 Kiểm tra nếu user đã có token thì update, nếu chưa có thì tạo mới
+        const existingToken = await RefreshToken.findOne({ where: { user_id: user.id } });
+
+        if (existingToken) {
+            await existingToken.update({ token: refreshToken });
+        } else {
+            await RefreshToken.create({ user_id: user.id, token: refreshToken });
+        }
 
         return {
             AccessToken: accessToken,
