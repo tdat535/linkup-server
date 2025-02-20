@@ -1,5 +1,6 @@
 const MediaPost = require('../models/mediaPost'); // Assuming you have a User model
-
+const Follow = require('../models/follow')
+const User = require('../models/user')
 const createMediaPost = async (mediaPostData) => {
     try {
         const newMediaPost = new MediaPost({
@@ -19,27 +20,43 @@ const createMediaPost = async (mediaPostData) => {
     }
 };
 
-const getMediaPosts = async () => {
+const getMediaPosts = async (userId) => {
     try {
-        const mediaPosts = await MediaPost.findAll();
+        // Lấy danh sách những người mà userId đang theo dõi
+        const followingList = await Follow.findAll({
+            where: { followers: userId },
+            attributes: ['followed']
+        });
+
+        // Chuyển danh sách thành mảng user_id của những người được theo dõi
+        let followedIds = followingList.map(follow => follow.followed);
+
+        // Thêm userId vào danh sách để lấy cả bài viết của chính mình
+        followedIds.push(userId);
+
+        // Lấy bài viết của những người trong danh sách theo dõi (bao gồm chính mình)
+        const mediaPosts = await MediaPost.findAll({
+            where: {
+                user_id: followedIds
+            },
+            include: [{ model: User, attributes: ['username', 'email'] }] // Thêm thông tin người đăng bài
+        });
+
+        return { data: mediaPosts };
+    } catch (error) {
+        throw new Error('Error getting media posts: ' + error.message);
+    }
+};
+
+const getAll= async () => {
+    try {
+        const list = await MediaPost.findAll();
         return {
-            data: mediaPosts
+            data: list
         };
     } catch (error) {
         throw new Error('Error getting media posts: ' + error.message);
     }
 };
 
-const getMediaPostsById = async (id) => {
-    try {
-        const mediaPost = await MediaPost.findByPk(id);
-        return {
-            data: mediaPost
-        }
-    }
-    catch (error) {
-        throw new Error('Error getting media post by id: ' + error.message);
-    }
-}
-
-module.exports = { getMediaPosts, createMediaPost};
+module.exports = { getMediaPosts, createMediaPost, getAll };

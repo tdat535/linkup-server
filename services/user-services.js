@@ -37,23 +37,20 @@ const login = async (userData) => {
     try {
         const user = await User.findOne({ where: { username: userData.username } });
 
-        // Kiểm tra nếu không tìm thấy người dùng
         if (!user) {
             return { error: "Người dùng ko tồn tại", status: 404 };
         }
 
-        // Kiểm tra mật khẩu
         const isPasswordValid = await bcrypt.compare(userData.password, user.password);
         if (!isPasswordValid) {
             return { error: "Sai mật khẩu", status: 401 };
         }
 
-        // Tạo Access Token và Refresh Token
         const accessToken = generateAccessToken(user.id);
         const refreshToken = generateRefreshToken(user.id);
 
-        // Lưu refresh token vào database
-        await RefreshToken.create({ token: refreshToken, userId: user.id });
+        // 🔥 Sửa lỗi userId -> user_id
+        await RefreshToken.create({ token: refreshToken, user_id: user.id });
 
         return {
             AccessToken: accessToken,
