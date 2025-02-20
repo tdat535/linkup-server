@@ -119,4 +119,32 @@ const generateRefreshToken = (userId) => {
     return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '1h' });
 };
 
-module.exports = { register, login, createNewAccessToken };
+const logout = async (userId) => {
+    try {
+        // Kiểm tra xem userId có tồn tại hay không
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return { error: "Người dùng không tồn tại", status: 404 };
+        }
+
+        // Tìm và xóa Refresh Token của người dùng trong cơ sở dữ liệu
+        const existingToken = await RefreshToken.findOne({ where: { user_id: userId } });
+        
+        if (!existingToken) {
+            return { error: "Không tìm thấy Refresh Token", status: 404 };
+        }
+
+        // Xóa refresh token khỏi cơ sở dữ liệu
+        await existingToken.destroy();
+
+        return {
+            message: "Người dùng đã đăng xuất thành công",
+            status: 200
+        };
+    } catch (error) {
+        console.error("Logout Error:", error);
+        return { error: "Lỗi khi đăng xuất", status: 500 };
+    }
+};
+
+module.exports = { register, login, createNewAccessToken, logout };
