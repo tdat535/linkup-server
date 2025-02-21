@@ -9,14 +9,20 @@ const register = async (userData) => {
     try {
         // Kiểm tra xem username đã tồn tại trong database chưa
         const existingUser = await User.findOne({ where: { username: userData.username } });
-
         if (existingUser) {
             return { error: "Username đã tồn tại", status: 400 };
         }
-
+        if (10 > userData.phonenumber.length || 11 < userData.phonenumber.length){
+            return { error: "Số điện thoại sai định dạng", status: 401 };
+        }
+        if (!userData.email.endsWith("@gmail.com")){
+            return { error: "Email sai định dạng", status: 401 };
+        }
         const hashedPassword = await bcrypt.hash(userData.password, 10);
         const newUser = new User({
             username: userData.username,
+            email: userData.email,
+            phonenumber: userData.phonenumber,
             password: hashedPassword
         });
         await newUser.save();
@@ -24,6 +30,7 @@ const register = async (userData) => {
             UserId: newUser.id,
             Username: newUser.username,
             Email: newUser.email || null,
+            phonenumber: newUser.phonenumber || null,
             UserImage: newUser.userImage || null,
             SocialMedia: newUser.socialMedia || [],
             UserType: newUser.userType || 'user',
