@@ -39,10 +39,13 @@ const getMediaPosts = async (userId) => {
             where: {
                 user_id: followedIds
             },
-            include: [{ model: User, attributes: ['username', 'email'] }] // Thêm thông tin người đăng bài
+            include: [{ 
+                model: User, 
+                attributes: ['username', 'email', 'avatar'] // Thêm các trường bạn muốn trả về từ User
+            }]
         });
 
-        return { data: mediaPosts };
+        return mediaPosts;
     } catch (error) {
         throw new Error('Error getting media posts: ' + error.message);
     }

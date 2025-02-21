@@ -8,6 +8,14 @@ router.post("/createFollow", async (req, res) => {
     try {
         const Follow = await createFollow(req.body);
 
+        if (Follow.error) {
+            return res.status(Follow.status).send({
+                isSuccess: false,
+                status: Follow.status,
+                message: Follow.error,
+            });
+        }
+
         res.status(200).send({
             isSuccess:true,
             status: 200,
