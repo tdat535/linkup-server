@@ -12,7 +12,7 @@ const register = async (userData) => {
         if (existingUser) {
             return { error: "Username đã tồn tại", status: 400 };
         }
-        if (10>userData.phonenumber.length || 11<userData.phonenumber.length){
+        if (10 > userData.phonenumber.length || 11 < userData.phonenumber.length){
             return { error: "Số điện thoại sai định dạng", status: 401 };
         }
         if (!userData.email.endsWith("@gmail.com")){

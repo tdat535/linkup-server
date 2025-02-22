@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
 const { sequelize, connectDB } = require('./config/database');
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // Import models
 require('./models/user');
@@ -19,6 +21,7 @@ app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
 app.use('/api/follow',require('./routes/follow'));
 
+app.use(cors());
 // Đọc file API document
 const path = require('path');
 const redoc = require('redoc-express');

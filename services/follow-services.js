@@ -23,14 +23,14 @@ const createFollow = async (followData) => {
 };
 
 const getFollow = async () => {
-    try {
-        const listFollower = await Follow.findAll();
-        return {
-            data: listFollower
-        };
-    } catch (error) {
-        throw new Error('Error getting media posts: ' + error.message);
-    }
+  try {
+    const listFollower = await Follow.findAll();
+    return {
+      data: listFollower,
+    };
+  } catch (error) {
+    throw new Error("Error getting media posts: " + error.message);
+  }
 };
 
 module.exports = { createFollow, getFollow };
