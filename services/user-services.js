@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-
+const { Op } = require("sequelize");
 const User = require('../models/user'); // Assuming you have a User model
 const RefreshToken = require('../models/refreshToken');
 
@@ -156,19 +156,26 @@ const logout = async (userId) => {
 
 const useSearch = async(userData) => {
     try {
-        const existemail = await User.findOne({ where: { email: userData.email } });
-        const existphonenumber = await User.findOne({ where: { phonenumber: userData.phonenumber } });
-        const existusername = await User.findOne({ where: { username: userData.username } });
-        if (!existemail){
-            if (!existphonenumber){
-                if (!existusername){
-                    return {error: "Không tìm thấy người dùng này.",status:600};
-                }
+        
+        if (!userData.email && !userData.username && !userData.phonenumber) {
+            return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
+        }
+
+        const dataexist = await User.findOne({
+            where: {
+                [Op.or]: [
+                    userData.email ? { email: userData.email } : null,
+                    userData.username ? { username: userData.username } : null,
+                    userData.phonenumber ? { phonenumber: userData.phonenumber } : null
+                ].filter(Boolean) // Loại bỏ các giá trị null để tránh lỗi
             }
+        });
+
+        if (!dataexist){
+            return {error: "Không tìm thấy người dùng này.",status:600};
         }
         return {
-            message: "Đã tìm thấy người dùng này",
-            status: 200
+            data: dataexist
         };
     } catch (error) {
         console.error("Search Error:", error);

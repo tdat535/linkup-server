@@ -1,6 +1,5 @@
 const express = require("express");
 const { register, login, createNewAccessToken ,useSearch} = require("../services/user-services");
-
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
