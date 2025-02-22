@@ -107,7 +107,6 @@ router.post("/search", async(req,res)=>{
             isSuccess:true,
             status: 200,
             message: "tìm thấy thành công thành công",
-            data: Follow
         });
     } catch (error) {
         res.status(400).send('Something went wrong!');
