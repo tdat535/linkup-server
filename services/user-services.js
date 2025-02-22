@@ -154,4 +154,25 @@ const logout = async (userId) => {
     }
 };
 
-module.exports = { register, login, createNewAccessToken, logout };
+const useSearch = async(userData) => {
+    try {
+        const existemail = await User.findOne({ where: { email: userData.email } });
+        const existphonenumber = await User.findOne({ where: { phonenumber: userData.phonenumber } });
+        const existusername = await User.findOne({ where: { username: userData.username } });
+        if (!existemail){
+            if (!existphonenumber){
+                if (!existusername){
+                    return {error: "Không tìm thấy người dùng này.",status:600};
+                }
+            }
+        }
+        return {
+            message: "Đã tìm thấy người dùng này",
+            status: 200
+        };
+    } catch (error) {
+        console.error("Search Error:", error);
+        return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
+    }
+}
+module.exports = { register, login, createNewAccessToken, logout ,useSearch};
