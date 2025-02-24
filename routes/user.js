@@ -76,12 +76,7 @@ router.post("/refresh", async (req, res) => {
 });
 
 router.post("/logout", async (req, res) => {
-    const { refreshToken } = req.body; // Lấy refreshToken từ body (hoặc bạn có thể lấy từ header)
-
     try {
-
-        const result = await createNewAccessToken(refreshToken);
-l
         res.status(200).send({
             isSuccess: true,
             status: 200,
