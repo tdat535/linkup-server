@@ -5,27 +5,27 @@ const createMessenger = async (messenger) => {
         const newMessenger = new Messenger({
             content: messenger.content,
             image: messenger.image,
-            sender_id: messenger.sender_id,
-            receiver_id: messenger.receiver_id
+            senderId: messenger.senderId,
+            receiverId: messenger.receiverId
         });
         await newMessenger.save();
         return {
             id: newMessenger.id,
             content: newMessenger.content,
             image: newMessenger.image,
-            sender_id: newMessenger.sender_id,
-            receiver_id: newMessenger.receiver_id
+            senderId: newMessenger.senderId,
+            receiverId: newMessenger.receiverId
         };
     } catch (error) {
         throw new Error('Error creating messenger: ' + error.message);
     }
 };
 
-const getMessenger = async (sender_id, receiver_id) => {
+const getMessenger = async (senderId, receiverId) => {
     try {
         const messengers = await Messenger.findAll({
-            where: { sender_id, receiver_id },
-            order: [['createdAt', 'ASC']]
+            where: { senderId, receiverId },
+            order: [['receivingDate', 'createdAt', 'ASC']]
         });
         return {
             success: true,

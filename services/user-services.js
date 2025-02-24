@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user'); // Assuming you have a User model
 const RefreshToken = require('../models/refreshToken');
+const { Op } = require("sequelize");
 
 const register = async (userData) => {
     try {
@@ -57,12 +58,12 @@ const login = async (userData) => {
         const refreshToken = generateRefreshToken(user.id);
 
         // 🔥 Kiểm tra nếu user đã có token thì update, nếu chưa có thì tạo mới
-        const existingToken = await RefreshToken.findOne({ where: { user_id: user.id } });
+        const existingToken = await RefreshToken.findOne({ where: { userId: user.id } });
 
         if (existingToken) {
             await existingToken.update({ token: refreshToken });
         } else {
-            await RefreshToken.create({ user_id: user.id, token: refreshToken });
+            await RefreshToken.create({ userId: user.id, token: refreshToken });
         }
 
         return {
@@ -135,7 +136,7 @@ const logout = async (userId) => {
         }
 
         // Tìm và xóa Refresh Token của người dùng trong cơ sở dữ liệu
-        const existingToken = await RefreshToken.findOne({ where: { user_id: userId } });
+        const existingToken = await RefreshToken.findOne({ where: { userId: userId } });
         
         if (!existingToken) {
             return { error: "Không tìm thấy Refresh Token", status: 404 };
@@ -154,4 +155,37 @@ const logout = async (userId) => {
     }
 };
 
-module.exports = { register, login, createNewAccessToken, logout };
+const useSearch = async(userData) => {
+    try {
+        
+        if (!userData.email && !userData.username && !userData.phonenumber) {
+            return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
+        }
+
+        const dataexist = await User.findOne({
+            where: {
+                [Op.or]: [
+                    userData.email ? { email: userData.email } : null,
+                    userData.username ? { username: userData.username } : null,
+                    userData.phonenumber ? { phonenumber: userData.phonenumber } : null
+                ].filter(Boolean) // Loại bỏ các giá trị null để tránh lỗi
+            }
+        });
+
+        if (!dataexist){
+            return {error: "Không tìm thấy người dùng này.",status:600};
+        }
+        return {
+            UserId: dataexist.id,
+            Username: dataexist.username,
+            Email: dataexist.email,
+            phonenumber: dataexist.phonenumber 
+        };
+    } catch (error) {
+        console.error("Search Error:", error);
+        return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
+    }
+}
+
+
+module.exports = { register, login, createNewAccessToken, logout, useSearch };

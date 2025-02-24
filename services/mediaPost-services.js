@@ -6,14 +6,14 @@ const createMediaPost = async (mediaPostData) => {
         const newMediaPost = new MediaPost({
             content: mediaPostData.content,
             image: mediaPostData.image,
-            user_id: mediaPostData.user_id
+            userId: mediaPostData.userId
         });
         await newMediaPost.save();
         return {
             id: newMediaPost.id,
             content: newMediaPost.content,
             image: newMediaPost.image,
-            user_id: newMediaPost.user_id
+            userId: newMediaPost.userId
         };
     } catch (error) {
         throw new Error('Error creating media post: ' + error.message);
@@ -22,26 +22,25 @@ const createMediaPost = async (mediaPostData) => {
 
 const getMediaPosts = async (userId) => {
     try {
-        // Lấy danh sách những người mà userId đang theo dõi
+        // Tìm danh sách những người mà user đang theo dõi
         const followingList = await Follow.findAll({
-            where: { followers: userId },
-            attributes: ['followed']
+            where: { followerId: userId },  // Sửa lại followers -> followerId
+            attributes: ['followingId']     // Sửa lại followed -> followingId
         });
 
-        // Chuyển danh sách thành mảng user_id của những người được theo dõi
-        let followedIds = followingList.map(follow => follow.followed);
+        let followedIds = followingList.map(follow => follow.followingId);
 
-        // Thêm userId vào danh sách để lấy cả bài viết của chính mình
+        // Thêm chính userId để lấy cả bài viết của người đó
         followedIds.push(userId);
 
         // Lấy bài viết của những người trong danh sách theo dõi (bao gồm chính mình)
         const mediaPosts = await MediaPost.findAll({
             where: {
-                user_id: followedIds
+                userId: followedIds  // Tìm bài viết của userId và những người mà user đang theo dõi
             },
             include: [{ 
                 model: User, 
-                attributes: ['username', 'email', 'avatar'] // Thêm các trường bạn muốn trả về từ User
+                attributes: ['username'] // Thêm thông tin user vào bài viết
             }]
         });
 
@@ -50,6 +49,7 @@ const getMediaPosts = async (userId) => {
         throw new Error('Error getting media posts: ' + error.message);
     }
 };
+
 
 const getAll= async () => {
     try {

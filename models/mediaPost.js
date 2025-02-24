@@ -12,7 +12,7 @@ const MediaPost = sequelize.define('MediaPost', {
     type: DataTypes.STRING,
     allowNull: true
   },
-  user_id: {
+  userId: {
     type: DataTypes.INTEGER,
     allowNull: false
   }
@@ -21,7 +21,7 @@ const MediaPost = sequelize.define('MediaPost', {
 });
 
 // Thiết lập quan hệ
-MediaPost.belongsTo(User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
-User.hasMany(MediaPost, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+MediaPost.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+User.hasMany(MediaPost, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 module.exports = MediaPost;

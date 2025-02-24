@@ -4,11 +4,11 @@ const MediaPost = require('./mediaPost'); // Import sau khi đã định nghĩa 
 const User = require('./user'); // Import sau khi đã định nghĩa User
 
 const Like = sequelize.define('Like', {
-    post_id: {
+    postId: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    user_id: {
+    userId: {
         type: DataTypes.INTEGER,
         allowNull: false
     }
@@ -16,11 +16,11 @@ const Like = sequelize.define('Like', {
     timestamps: true
 });
 
-Like.belongsTo(MediaPost, { foreignKey: 'post_id', onDelete: 'CASCADE' });
-MediaPost.hasMany(Like, { foreignKey: 'post_id', onDelete: 'CASCADE' });
+Like.belongsTo(MediaPost, { foreignKey: 'postId', onDelete: 'CASCADE' });
+MediaPost.hasMany(Like, { foreignKey: 'postId', onDelete: 'CASCADE' });
 
-Like.belongsTo(User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
-User.hasMany(Like, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Like.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+User.hasMany(Like, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 module.exports = Like;
 

@@ -5,24 +5,24 @@ const createComment = async (comment) => {
         const newComment = new Comment({
             content: comment.content,
             image: comment.image,
-            post_id: comment.post_id,
-            user_id: comment.user_id
+            postId: comment.postId,
+            userId: comment.userId
         });
         await newComment.save();
         return {
             id: comment.id,
             content: comment.content,
             image: comment.image,
-            post_id: comment.post_id,
-            user_id: comment.user_id
+            postId: comment.postId,
+            userId: comment.userId
         };
     } catch (error) {
         throw new Error('Error creating comment: ' + error.message);
     }
 };
 
-const getComments = async (post_id) => {
-    if (!post_id) {
+const getComments = async (postId) => {
+    if (!postId) {
         return {
             error: 'post_id is required to get comments'
         };
@@ -30,7 +30,7 @@ const getComments = async (post_id) => {
 
     try {
         const comments = await Comment.findAll({
-            where: { post_id }, 
+            where: { postId }, 
             order: [['createdAt', 'DESC']] 
         });
 

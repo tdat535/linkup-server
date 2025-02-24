@@ -13,11 +13,11 @@ const Comment = sequelize.define('Comment', {
     type: DataTypes.STRING,
     allowNull: true
   },
-  post_id: {
+  postId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  user_id: {
+  userId: {
     type: DataTypes.INTEGER,
     allowNull: false
   }
@@ -26,10 +26,10 @@ const Comment = sequelize.define('Comment', {
 });
 
 // Thiết lập quan hệ
-Comment.belongsTo(MediaPost, { foreignKey: 'post_id', onDelete: 'CASCADE' });
-MediaPost.hasMany(Comment, { foreignKey: 'post_id', onDelete: 'CASCADE' });
+Comment.belongsTo(MediaPost, { foreignKey: 'postId', onDelete: 'CASCADE' });
+MediaPost.hasMany(Comment, { foreignKey: 'postId', onDelete: 'CASCADE' });
 
-Comment.belongsTo(User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
-User.hasMany(Comment, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Comment.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+User.hasMany(Comment, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
 module.exports = Comment;

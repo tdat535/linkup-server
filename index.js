@@ -21,7 +21,6 @@ app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
 app.use('/api/follow',require('./routes/follow'));
 
-app.use(cors());
 // Đọc file API document
 const path = require('path');
 const redoc = require('redoc-express');

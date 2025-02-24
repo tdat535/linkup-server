@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, createNewAccessToken } = require("../services/user-services");
+const { register, login, createNewAccessToken, useSearch } = require("../services/user-services");
 
 const router = express.Router();
 
@@ -87,6 +87,30 @@ l
             status: 200,
             message: "Logout successfully",
         });
+    } catch (error) {
+        res.status(400).send('Something went wrong!');
+        console.log(error);    
+    }
+});
+
+router.post("/search", async (req, res) => {
+    try {
+        const result = await useSearch(req.body);
+
+        if (result.error) {
+            return res.status(result.status).send({
+                isSuccess: false,
+                status: result.status,
+                message: result.error,
+            });
+        }
+        res.status(200).send({
+            isSuccess: true,
+            status: 200,
+            message: "Đã tìm thấy người dùng",
+            data: result
+        });
+        
     } catch (error) {
         res.status(400).send('Something went wrong!');
         console.log(error);    

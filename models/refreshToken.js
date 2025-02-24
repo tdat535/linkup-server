@@ -4,7 +4,7 @@ const User = require('./user'); // Import model User
 
 // Định nghĩa model RefreshToken
 const RefreshToken = sequelize.define('RefreshToken', {
-    user_id: {
+    userId: {
         type: DataTypes.INTEGER,
         primaryKey: true, // Đặt user_id làm khóa chính
         allowNull: false,
@@ -24,7 +24,7 @@ const RefreshToken = sequelize.define('RefreshToken', {
 });
 
 // Thiết lập quan hệ với User
-User.hasOne(RefreshToken, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
-RefreshToken.belongsTo(User, { foreignKey: 'user_id' });
+User.hasOne(RefreshToken, { foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+RefreshToken.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = RefreshToken;

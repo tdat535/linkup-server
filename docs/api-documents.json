@@ -319,6 +319,66 @@
                     }
                 }
             }
+        },
+        "/api/follow/createFollow": {
+            "post": {
+                "summary": "Tạo lượt theo dõi cho các user",
+                "tags": [
+                    "Follow"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "follower_id": {
+                                        "type": "int"
+                                    },
+                                    "followed_id": {
+                                        "type": "int"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo followers thành công"
+                    },
+                    "400": {
+                        "description": "Lỗi đầu vào không hợp lệ"
+                    }
+                }
+            }
+        },
+        "/api/follow/getFollow": {
+            "get": {
+                "summary": "Lấy danh sách theo dõi của các user",
+                "tags": [
+                    "Follow"
+                ],
+                "parameters": [
+                    {
+                        "name": "postId",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "int"
+                        },
+                        "description": "ID của bài viết"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lấy danh sách lượt thích thành công"
+                    },
+                    "400": {
+                        "description": "Lỗi không xác định"
+                    }
+                }
+            }
         }
         
     }

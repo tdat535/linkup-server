@@ -12,12 +12,16 @@ const Messenger = sequelize.define('Messenger', {
     type: DataTypes.STRING,
     allowNull: true
   },
-  sender_id: {
+  senderId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  receiver_id: {
+  receiverId: {
     type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  receivingDate: {
+    type: DataTypes.DATE,
     allowNull: false
   }
 }, {
@@ -25,10 +29,10 @@ const Messenger = sequelize.define('Messenger', {
 });
 
 // Thiết lập quan hệ với User
-Messenger.belongsTo(User, { foreignKey: 'sender_id', onDelete: 'CASCADE' });
-User.hasMany(Messenger, { foreignKey: 'sender_id', onDelete: 'CASCADE' });
+Messenger.belongsTo(User, { foreignKey: 'senderId', onDelete: 'CASCADE' });
+User.hasMany(Messenger, { foreignKey: 'senderId', onDelete: 'CASCADE' });
 
-Messenger.belongsTo(User, { foreignKey: 'receiver_id', onDelete: 'CASCADE' });
-User.hasMany(Messenger, { foreignKey: 'receiver_id', onDelete: 'CASCADE' });
+Messenger.belongsTo(User, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
+User.hasMany(Messenger, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
 
 module.exports = Messenger;
