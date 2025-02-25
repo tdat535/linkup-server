@@ -1,217 +1,246 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-      "title": "LinkUp API",
-      "version": "1.0.0",
-      "description": "API documentation for LinkUp",
-      "contact": {
-        "name": "LinkUp",
-        "url": "https://linkup-server-rust.vercel.app"
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LinkUp API",
+    "version": "1.0.0",
+    "description": "API documentation for LinkUp",
+    "contact": {
+      "name": "LinkUp",
+      "url": "https://linkup-server-rust.vercel.app"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://linkup-server-rust.vercel.app",
+      "description": "Vercel Server"
+    }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "summary": "Đăng ký người dùng mới",
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Đăng ký thành công" },
+          "400": { "description": "Lỗi đầu vào không hợp lệ" }
+        }
       }
     },
-    "servers": [
-      {
-        "url": "https://linkup-server-rust.vercel.app",
-        "description": "Vercel Server"
-      }
-    ],
-    "paths": {
-      "/api/auth/register": {
-        "post": {
-          "summary": "Đăng ký người dùng mới",
-          "tags": ["Auth"],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "username": { "type": "string" },
-                    "email": { "type": "string" },
-                    "password": { "type": "string" }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": { "description": "Đăng ký thành công" },
-            "400": { "description": "Lỗi đầu vào không hợp lệ" }
-          }
-        }
-      },
-      "/api/auth/login": {
-        "post": {
-          "summary": "Đăng nhập người dùng",
-          "tags": ["Auth"],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "email": { "type": "string" },
-                    "password": { "type": "string" }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": { "description": "Đăng nhập thành công" },
-            "400": { "description": "Sai email hoặc mật khẩu" }
-          }
-        }
-      },
-      "/api/auth/refresh": {
-        "post": {
-          "summary": "Tạo access token mới từ refresh token",
-          "tags": ["Auth"],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "RefreshToken": { "type": "string" }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": { "description": "Tạo thành công access token mới" },
-            "400": { "description": "RefreshToken hết hạn hoặc không tồn tại" }
-          }
-        }
-      },
-      "/api/auth/logout": {
-        "post": {
-          "summary": "Đăng xuất người dùng",
-          "tags": ["Auth"],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "RefreshToken": { "type": "string" }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": { "description": "Đăng xuất thành công" },
-            "400": { "description": "RefreshToken hết hạn hoặc không tồn tại" }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/media/getPost": {
-        "get": {
-          "summary": "Lấy danh sách bài viết",
-          "tags": ["Media"],
-          "responses": {
-            "200": { "description": "Lấy danh sách bài viết thành công" },
-            "400": { "description": "Lỗi không xác định" }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/media/upPost": {
-        "post": {
-          "summary": "Tạo bài viết mới",
-          "tags": ["Media"],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "content": { "type": "string" },
-                    "image": { "type": "string" },
-                    "user_id": { "type": "int" }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": { "description": "Tạo bài viết thành công" },
-            "400": { "description": "Lỗi đầu vào không hợp lệ" }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/comment/getComment": {
-        "get": {
-          "summary": "Lấy danh sách comment",
-          "tags": ["Comment"],
-          "parameters": [
-            {
-              "name": "post_id",
-              "in": "query",
-              "required": true,
+    "/api/auth/login": {
+      "post": {
+        "summary": "Đăng nhập người dùng",
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
               "schema": {
-                "type": "int"
-              },
-              "description": "ID của bài viết"
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
             }
-          ],
-          "responses": {
-            "200": { "description": "Lấy danh sách comment thành công" },
-            "400": { "description": "Lỗi không xác định" }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
+          }
+        },
+        "responses": {
+          "200": { "description": "Đăng nhập thành công" },
+          "400": { "description": "Sai email hoặc mật khẩu" }
         }
-      },
-      "/api/comment/createComment": {
-        "post": {
-          "summary": "Tạo bình luận mới cho bài viết",
-          "tags": ["Comment"],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "content": { "type": "string" },
-                    "user_id": { "type": "int" },
-                    "post_id": { "type": "int" }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "summary": "Tạo access token mới từ refresh token",
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "RefreshToken": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tạo thành công access token mới" },
+          "400": { "description": "RefreshToken hết hạn hoặc không tồn tại" }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Đăng xuất người dùng",
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "RefreshToken": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Đăng xuất thành công" },
+          "400": { "description": "RefreshToken hết hạn hoặc không tồn tại" }
+        }
+      }
+    },
+    "/api/auth/search": {
+      "post": {
+        "summary": "Tìm kím người dùng",
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "Email của người dùng (tùy chọn)"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Username của người dùng (tùy chọn)"
+                  },
+                  "phonenumber": {
+                    "type": "string",
+                    "description": "Số điện thoại của người dùng (tùy chọn)"
                   }
                 }
               }
             }
-          },
-          "responses": {
-            "200": { "description": "Tạo bình luận thành công" },
-            "400": { "description": "Lỗi đầu vào không hợp lệ" }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
+          }
+        },
+        "responses": {
+          "200": { "description": "Tìm kím thành công" },
+          "400": {
+            "description": "Thông tin người dùng không đúng hoặc không tồn tại"
+          }
         }
-      },
-      "/api/follow/createFollow": {
+      }
+    },
+    "/api/media/getPost": {
+      "get": {
+        "summary": "Lấy danh sách bài viết",
+        "tags": ["Media"],
+        "responses": {
+          "200": { "description": "Lấy danh sách bài viết thành công" },
+          "400": { "description": "Lỗi không xác định" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/media/upPost": {
+      "post": {
+        "summary": "Tạo bài viết mới",
+        "tags": ["Media"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": { "type": "string" },
+                  "image": { "type": "string" },
+                  "userId": { "type": "int" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tạo bài viết thành công" },
+          "400": { "description": "Lỗi đầu vào không hợp lệ" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/comment/getComment": {
+      "get": {
+        "summary": "Lấy danh sách comment",
+        "tags": ["Comment"],
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "query",
+            "schema": {
+              "type": "int"
+            },
+            "description": "ID của bài viết"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lấy danh sách comment thành công" },
+          "400": { "description": "Lỗi không xác định" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/comment/createComment": {
+      "post": {
+        "summary": "Tạo bình luận mới cho bài viết",
+        "tags": ["Comment"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": { "type": "string" },
+                  "userId": { "type": "int" },
+                  "postId": { "type": "int" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tạo bình luận thành công" },
+          "400": { "description": "Lỗi đầu vào không hợp lệ" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/follow/createFollow": {
       "post": {
         "summary": "Tạo lượt theo dõi cho user",
         "tags": ["Follow"],
@@ -223,112 +252,234 @@
                 "properties": {
                   "followerId": {
                     "type": "integer",
-                    "description": "ID của người dùng muốn theo dõi"
+                    "description": "ID của bản thân mình"
                   },
                   "followingId": {
                     "type": "integer",
-                    "description": "ID của người dùng mà người dùng muốn theo dõi"
+                    "description": "ID của người mà mình muốn theo dõi"
                   }
-                },
-                "required": ["followerId", "followingId"]
+                }
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Tạo follow thành công",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "isSuccess": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "status": {
-                      "type": "integer",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Theo dõi thành công"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": { "type": "integer" },
-                        "followerId": { "type": "integer" },
-                        "followingId": { "type": "integer" },
-                        "followedAt": { "type": "string", "format": "date-time" }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Lỗi đầu vào không hợp lệ hoặc người dùng đã follow trước đó",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "isSuccess": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "status": {
-                      "type": "integer",
-                      "example": 400
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Người dùng đã follow trước đó."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Người dùng không tồn tại",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "isSuccess": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "status": {
-                      "type": "integer",
-                      "example": 404
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Người dùng không tồn tại."
-                    }
+          "200": { "description": "Đã gửi yêu cầu theo dõi" },
+          "400": { "description": "Lỗi đầu vào không hợp lệ" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/follow/acceptedFollow": {
+      "post": {
+        "summary": "Chấp nhận lượt theo dõi",
+        "tags": ["Follow"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "followerId": {
+                    "type": "integer",
+                    "description": "ID của người dùng gửi yều cầu theo dõi"
+                  },
+                  "followingId": {
+                    "type": "integer",
+                    "description": "ID của bản thân mình"
                   }
                 }
               }
             }
           }
-        }
+        },
+        "responses": {
+          "200": { "description": "Chấp nhận yêu cầu theo dõi" },
+          "400": { "description": "Lỗi đầu vào không hợp lệ" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/follow/getFollow": {
+      "get": {
+        "summary": "Lấy danh sách theo dõi",
+        "tags": ["Follow"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {
+              "type": "int"
+            },
+            "description": "ID của người dùng"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lấy danh sách theo dõi thành công" },
+          "400": { "description": "Lỗi không xác định" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/messenger/getMessenger": {
+      "get": {
+        "summary": "Lấy danh sách cuộc trò chuyện",
+        "tags": ["Messenger"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "description": "ID của người dùng cần lấy danh sách tin nhắn"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lấy danh sách cuộc trò chuyện thành công" },
+          "400": { "description": "Thiếu thông tin userId" },
+          "500": { "description": "Lỗi server" }
+        },
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/api/messenger/createMessenger": {
+      "post": {
+        "summary": "Gửi tin nhắn",
+        "tags": ["Messenger"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "receiverId": {
+                    "type": "integer",
+                    "description": "ID của người nhận"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Nội dung tin nhắn"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "URL hình ảnh (nếu có)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Gửi tin nhắn thành công" },
+          "400": {
+            "description": "Không thể gửi tin nhắn do quan hệ follow chưa được chấp nhận"
+          },
+          "500": { "description": "Lỗi server" }
+        },
+        "security": [{ "bearerAuth": [] }]
+      }
+    },
+    "/api/messenger/getMessengerDetail": {
+      "get": {
+        "summary": "Lấy tin nhắn giữa hai người",
+        "tags": ["Messenger"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "description": "ID của bản thân mình"
+          },
+          {
+            "name": "otherUserId",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "description": "ID của người muốn xem tin nhắn với"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lấy chi tiết tin nhắn thành công" },
+          "400": { "description": "Không có quan hệ follow hợp lệ" },
+          "500": { "description": "Lỗi server" }
+        },
+        "security": [{ "bearerAuth": [] }],
+        "description": "Ví dụ URL: `/api/messenger/getMessengerDetail?userId=123&otherUserId=456`"
+      }
+    },
+
+    "/api/like/getLikes": {
+      "get": {
+        "summary": "Lấy danh sách lượt thích",
+        "tags": ["Like"],
+        "parameters": [
+          {
+            "name": "post_id",
+            "in": "query",
+            "schema": {
+              "type": "int"
+            },
+            "description": "ID của bài viết"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lấy danh sách comment thành công" },
+          "400": { "description": "Lỗi không xác định" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/like/createLike": {
+      "post": {
+        "summary": "Tạo bình luận mới cho bài viết",
+        "tags": ["Comment"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": { "type": "int" },
+                  "postId": { "type": "int" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tạo lượt thích thành công" },
+          "400": { "description": "Lỗi đầu vào không hợp lệ" }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
-    },
-    "components": {
-      "securitySchemes": {
-        "bearerAuth": {
-          "type": "http",
-          "scheme": "bearer",
-          "bearerFormat": "JWT"
-        }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Người dùng cần truyền Access Token vào phần Authorization theo định dạng Bearer Token. Access Token này được trả về khi đăng nhập thành công."
       }
     }
   }
-  
+}

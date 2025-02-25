@@ -54,8 +54,6 @@ const getMediaPosts = async (userId) => {
     }
 };
 
-
-
 const getAll= async () => {
     try {
         const list = await MediaPost.findAll();
