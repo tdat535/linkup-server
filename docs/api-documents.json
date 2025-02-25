@@ -6,12 +6,12 @@
     "description": "API documentation for LinkUp",
     "contact": {
       "name": "LinkUp",
-      "url": "https://linkup-server-rust.vercel.app"
+      "url": "api-linkup.id.vn"
     }
   },
   "servers": [
     {
-      "url": "https://linkup-server-rust.vercel.app",
+      "url": "api-linkup.id.vn",
       "description": "Vercel Server"
     }
   ],
