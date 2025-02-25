@@ -22,12 +22,16 @@ const createMediaPost = async (mediaPostData) => {
 
 const getMediaPosts = async (userId) => {
     try {
-        // Tìm danh sách những người mà user đang theo dõi
+        // Tìm danh sách những người mà user đang theo dõi và trạng thái là "accepted"
         const followingList = await Follow.findAll({
-            where: { followerId: userId },  // Sửa lại followers -> followerId
-            attributes: ['followingId']     // Sửa lại followed -> followingId
+            where: { 
+                followerId: userId, 
+                status: 'accepted'  // Chỉ lấy các follow với trạng thái 'accepted'
+            },
+            attributes: ['followingId']  // Chỉ lấy ID người được theo dõi
         });
 
+        // Lấy danh sách ID của những người mà user đang theo dõi
         let followedIds = followingList.map(follow => follow.followingId);
 
         // Thêm chính userId để lấy cả bài viết của người đó
@@ -40,7 +44,7 @@ const getMediaPosts = async (userId) => {
             },
             include: [{ 
                 model: User, 
-                attributes: ['username'] // Thêm thông tin user vào bài viết
+                attributes: ['username']  // Thêm thông tin username của người đăng bài
             }]
         });
 
@@ -49,6 +53,7 @@ const getMediaPosts = async (userId) => {
         throw new Error('Error getting media posts: ' + error.message);
     }
 };
+
 
 
 const getAll= async () => {

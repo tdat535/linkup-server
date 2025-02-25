@@ -1,9 +1,9 @@
 const express = require("express");
 const { getMediaPosts, createMediaPost, getAll } = require("../services/mediaPost-services");
-
+const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
 const router = express.Router();
 
-router.get("/getPost", async (req, res) => {
+router.get("/getPost", authenticateToken,  async (req, res) => {
     try {
         const userId = req.query.user_id;
         if (!userId) {
@@ -29,7 +29,7 @@ router.get("/getPost", async (req, res) => {
     }
 });
 
-router.get("/getAll", async (req, res) => {
+router.get("/getAll",  async (req, res) => {
     try {
         const mediaPosts = await getAll();
         res.status(200).send({
@@ -44,7 +44,7 @@ router.get("/getAll", async (req, res) => {
     }
 });
 
-router.post("/createPost", async (req, res) => {  
+router.post("/createPost", authenticateToken, async (req, res) => {  
     try {
         const mediaPost = await createMediaPost(req.body);
         res.status(200).send({

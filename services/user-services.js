@@ -10,6 +10,14 @@ const register = async (userData) => {
     try {
         // Kiểm tra xem username đã tồn tại trong database chưa
         const existingUser = await User.findOne({ where: { username: userData.username } });
+
+        if (/\s/.test(userData.username)) {
+            return { error: "Username không được chứa khoảng trắng", status: 400 };
+        }
+
+        if(!userData.username || !userData.password || !userData.email || !userData.phonenumber){
+            return { error: "Vui lòng điền đầy đủ thông tin", status: 400 };
+        }
         if (existingUser) {
             return { error: "Username đã tồn tại", status: 400 };
         }
@@ -57,14 +65,15 @@ const login = async (userData) => {
         const accessToken = generateAccessToken(user.id);
         const refreshToken = generateRefreshToken(user.id);
 
-        // 🔥 Kiểm tra nếu user đã có token thì update, nếu chưa có thì tạo mới
-        const existingToken = await RefreshToken.findOne({ where: { userId: user.id } });
+        await RefreshToken.create({ userId: user.id, token: refreshToken });
+        // // 🔥 Kiểm tra nếu user đã có token thì update, nếu chưa có thì tạo mới
+        // const existingToken = await RefreshToken.findOne({ where: { userId: user.id } });
 
-        if (existingToken) {
-            await existingToken.update({ token: refreshToken });
-        } else {
-            await RefreshToken.create({ userId: user.id, token: refreshToken });
-        }
+        // if (existingToken) {
+        //     await existingToken.update({ token: refreshToken });
+        // } else {
+        //     
+        // }
 
         return {
             AccessToken: accessToken,
@@ -127,17 +136,12 @@ const generateRefreshToken = (userId) => {
     return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '1h' });
 };
 
-const logout = async (userId) => {
+const logout = async (refreshToken) => {
     try {
-        // Kiểm tra xem userId có tồn tại hay không
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return { error: "Người dùng không tồn tại", status: 404 };
-        }
+        // Tìm Refresh Token trong cơ sở dữ liệu
+        const existingToken = await RefreshToken.findOne({ where: { token: refreshToken } });
 
-        // Tìm và xóa Refresh Token của người dùng trong cơ sở dữ liệu
-        const existingToken = await RefreshToken.findOne({ where: { userId: userId } });
-        
+        // Nếu không tìm thấy token
         if (!existingToken) {
             return { error: "Không tìm thấy Refresh Token", status: 404 };
         }
@@ -154,6 +158,7 @@ const logout = async (userId) => {
         return { error: "Lỗi khi đăng xuất", status: 500 };
     }
 };
+
 
 const useSearch = async(userData) => {
     try {
@@ -188,4 +193,4 @@ const useSearch = async(userData) => {
 }
 
 
-module.exports = { register, login, createNewAccessToken, logout, useSearch };
+module.exports = { register, login, createNewAccessToken, logout, useSearch, logout };

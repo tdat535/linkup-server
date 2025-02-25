@@ -1,9 +1,9 @@
 const express = require("express");
 const { getLikes, createLike } = require("../services/like-services");
-
+const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
 const router = express.Router();
 
-router.get("/getLikes", async (req, res) => {
+router.get("/getLikes", authenticateToken, async (req, res) => {
     try {
         const likes = await getLikes(req.query.post_id);
         res.status(200).send({
@@ -18,7 +18,7 @@ router.get("/getLikes", async (req, res) => {
     }
 });
 
-router.post("/createLike", async (req, res) => {
+router.post("/createLike", authenticateToken, async (req, res) => {
     try {
         const like = await createLike(req.body);
         res.status(200).send({

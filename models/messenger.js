@@ -21,8 +21,7 @@ const Messenger = sequelize.define('Messenger', {
     allowNull: false
   },
   receivingDate: {
-    type: DataTypes.DATE,
-    allowNull: false
+    type: DataTypes.DATE
   }
 }, {
   timestamps: true

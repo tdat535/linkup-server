@@ -1,6 +1,6 @@
 const express = require("express");
-const { register, login, createNewAccessToken, useSearch } = require("../services/user-services");
-
+const { register, login, createNewAccessToken, useSearch, logout } = require("../services/user-services");
+const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
@@ -75,20 +75,47 @@ router.post("/refresh", async (req, res) => {
     }
 });
 
-router.post("/logout", async (req, res) => {
+router.post("/logout",  async (req, res) => {
     try {
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Logout successfully",
-        });
+        // Kiểm tra xem refreshToken có được gửi từ client không
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            return res.status(400).send({
+                isSuccess: false,
+                message: "Refresh Token không được cung cấp",
+                status: 400
+            });
+        }
+
+        // Gọi hàm logout và truyền refreshToken vào
+        const result = await logout(refreshToken);
+
+        // Kiểm tra kết quả và trả về phản hồi
+        if (result.status === 200) {
+            res.status(200).send({
+                isSuccess: true,
+                status: 200,
+                message: result.message,
+            });
+        } else {
+            res.status(result.status).send({
+                isSuccess: false,
+                status: result.status,
+                message: result.error,
+            });
+        }
     } catch (error) {
-        res.status(400).send('Something went wrong!');
-        console.log(error);    
+        res.status(400).send({
+            isSuccess: false,
+            status: 400,
+            message: 'Something went wrong!',
+        });
+        console.error(error);    
     }
 });
 
-router.post("/search", async (req, res) => {
+
+router.post("/search", authenticateToken, async (req, res) => {
     try {
         const result = await useSearch(req.body);
 

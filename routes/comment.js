@@ -1,9 +1,9 @@
 const express = require("express");
 const { getComments, createComment } = require("../services/comment-services");
-
+const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
 const router = express.Router();
 
-router.get("/getComments", async (req, res) => {
+router.get("/getComments", authenticateToken, async (req, res) => {
     try {
         const comments = await getComments(req.query.post_id);
         res.status(200).send({
@@ -18,7 +18,7 @@ router.get("/getComments", async (req, res) => {
     }
 });
 
-router.post("/createComment", async (req, res) => {
+router.post("/createComment", authenticateToken, async (req, res) => {
     try {
         const comment = await createComment(req.body);
         res.status(200).send({
