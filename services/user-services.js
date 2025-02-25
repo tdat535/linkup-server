@@ -160,37 +160,49 @@ const logout = async (refreshToken) => {
 };
 
 
-const useSearch = async(userData) => {
+const useSearch = async (userData) => {
     try {
-        
-        if (!userData.email && !userData.username && !userData.phonenumber) {
-            return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
+      // Kiểm tra xem có ít nhất một trong ba trường không trống
+      if (!userData.email && !userData.username && !userData.phonenumber) {
+        return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
+      }
+  
+      // Tự động phân loại input
+      if (userData.phonenumber && userData.phonenumber.startsWith("0")) {
+        userData.phonenumber = userData.phonenumber.trim(); // Nếu bắt đầu với '0' là phonenumber
+      } else if (userData.email && userData.email.includes("@gmail.com")) {
+        userData.email = userData.email.trim(); // Nếu chứa '@gmail.com' là email
+      } else {
+        userData.username = userData.username.trim(); // Còn lại là username
+      }
+  
+      // Tiến hành tìm kiếm với điều kiện đã phân loại
+      const dataexist = await User.findOne({
+        where: {
+          [Op.or]: [
+            userData.email ? { email: userData.email } : null,
+            userData.username ? { username: userData.username } : null,
+            userData.phonenumber ? { phonenumber: userData.phonenumber } : null
+          ].filter(Boolean) // Loại bỏ các giá trị null để tránh lỗi
         }
-
-        const dataexist = await User.findOne({
-            where: {
-                [Op.or]: [
-                    userData.email ? { email: userData.email } : null,
-                    userData.username ? { username: userData.username } : null,
-                    userData.phonenumber ? { phonenumber: userData.phonenumber } : null
-                ].filter(Boolean) // Loại bỏ các giá trị null để tránh lỗi
-            }
-        });
-
-        if (!dataexist){
-            return {error: "Không tìm thấy người dùng này.",status:600};
-        }
-        return {
-            UserId: dataexist.id,
-            Username: dataexist.username,
-            Email: dataexist.email,
-            phonenumber: dataexist.phonenumber 
-        };
+      });
+  
+      if (!dataexist) {
+        return { error: "Không tìm thấy người dùng này.", status: 600 };
+      }
+  
+      return {
+        UserId: dataexist.id,
+        Username: dataexist.username,
+        Email: dataexist.email,
+        phonenumber: dataexist.phonenumber
+      };
     } catch (error) {
-        console.error("Search Error:", error);
-        return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
+      console.error("Search Error:", error);
+      return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
     }
-}
+  };
+  
 
 
 module.exports = { register, login, createNewAccessToken, logout, useSearch, logout };
