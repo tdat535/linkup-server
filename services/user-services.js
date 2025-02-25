@@ -192,9 +192,9 @@ const useSearch = async (userData) => {
       }
   
       return {
-        UserId: dataexist.id,
-        Username: dataexist.username,
-        Email: dataexist.email,
+        userId: dataexist.id,
+        username: dataexist.username,
+        email: dataexist.email,
         phonenumber: dataexist.phonenumber
       };
     } catch (error) {
