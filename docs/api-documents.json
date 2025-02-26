@@ -29,7 +29,8 @@
                   "username": { "type": "string" },
                   "email": { "type": "string" },
                   "password": { "type": "string" },
-                  "phonenumber": { "type": "string" }
+                  "phonenumber": { "type": "string" },
+                  "realname": { "type": "string" }
                 }
               }
             }

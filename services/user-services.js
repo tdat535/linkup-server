@@ -32,7 +32,9 @@ const register = async (userData) => {
             username: userData.username,
             email: userData.email,
             phonenumber: userData.phonenumber,
-            password: hashedPassword
+            password: hashedPassword,
+            realname: userData.realname || null,
+            avatar: "https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg",
         });
         await newUser.save();
         return {
@@ -40,7 +42,7 @@ const register = async (userData) => {
             Username: newUser.username,
             Email: newUser.email || null,
             phonenumber: newUser.phonenumber || null,
-            UserImage: newUser.userImage || null,
+            UserImage: newUser.avatar || null,
             SocialMedia: newUser.socialMedia || [],
             UserType: newUser.userType || 'user',
          };
@@ -80,9 +82,10 @@ const login = async (userData) => {
             RefreshToken: refreshToken,
             UserId: user.id,
             Username: user.username,
-            Email: user.email || null,
-            UserImage: user.userImage || null,
-            SocialMedia: user.socialMedia || [],
+            Email: user.email,
+            Realname: user.realname,
+            Phonenumber: user.phonenumber,
+            Avatar: user.avatar,
             UserType: user.userType || "user",
         };
     } catch (error) {
@@ -202,7 +205,29 @@ const useSearch = async (userData) => {
       return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
     }
   };
+
+  const userProfile = async (userId) => {
+    try {
+      const user = await User.findByPk(userId);
+  
+      if (!user) {
+        return { error: "Không tìm thấy người dùng", status: 404 };
+      }
+  
+      return {
+        UserId: user.id,
+        username: user.username,
+        umail: user.email,
+        realname: user.realname,
+        phonenumber: user.phonenumber,
+        avatar: user.avatar,
+      };
+    } catch (error) {
+      console.error("Profile Error:", error);
+      return { error: "Lỗi xảy ra khi lấy thông tin người dùng", status: 500 };
+    }
+  };
   
 
 
-module.exports = { register, login, createNewAccessToken, logout, useSearch, logout };
+module.exports = { register, login, createNewAccessToken, logout, useSearch, logout, userProfile};

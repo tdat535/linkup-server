@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, createNewAccessToken, useSearch, logout } = require("../services/user-services");
+const { register, login, createNewAccessToken, useSearch, logout, userProfile } = require("../services/user-services");
 const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
 const router = express.Router();
 
@@ -139,5 +139,21 @@ router.post("/search", authenticateToken, async (req, res) => {
     }
 });
 
+router.get("/profile", authenticateToken, async (req, res) => {
+    try {
+        const user = req.query.user_id;
+        const result = await userProfile(user);
+        res.status(200).send({
+            isSuccess: true,
+            status: 200,
+            message: "Thông tin người dùng",
+            data: result
+        });
+    } catch (error) {
+        res.status(400).send('Something went wrong!');
+        console.log(error);    
+    }
+});
 
-module.exports = router;
+
+module.exports = router
