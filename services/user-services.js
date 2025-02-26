@@ -170,43 +170,48 @@ const useSearch = async (userData) => {
         return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
       }
   
-      // Tự động phân loại input
+      // Xử lý input trước khi tìm kiếm
       if (userData.phonenumber && userData.phonenumber.startsWith("0")) {
-        userData.phonenumber = userData.phonenumber.trim(); // Nếu bắt đầu với '0' là phonenumber
+        userData.phonenumber = userData.phonenumber.trim();
       } else if (userData.email && userData.email.includes("@gmail.com")) {
-        userData.email = userData.email.trim(); // Nếu chứa '@gmail.com' là email
+        userData.email = userData.email.trim();
       } else {
-        userData.username = userData.username.trim(); // Còn lại là username
+        userData.username = userData.username.trim();
       }
   
-      // Tiến hành tìm kiếm với điều kiện đã phân loại
-      const dataexist = await User.findOne({
+      // Tạo điều kiện tìm kiếm sử dụng LIKE để tìm các kết quả tương tự
+      const searchConditions = [];
+      if (userData.email) {
+        searchConditions.push({ email: { [Op.like]: `%${userData.email}%` } });
+      }
+      if (userData.username) {
+        searchConditions.push({ username: { [Op.like]: `%${userData.username}%` } });
+      }
+      if (userData.phonenumber) {
+        searchConditions.push({ phonenumber: { [Op.like]: `%${userData.phonenumber}%` } });
+      }
+  
+      // Tìm kiếm người dùng phù hợp
+      const users = await User.findAll({
         where: {
-          [Op.or]: [
-            userData.email ? { email: userData.email } : null,
-            userData.username ? { username: userData.username } : null,
-            userData.phonenumber ? { phonenumber: userData.phonenumber } : null
-          ].filter(Boolean) // Loại bỏ các giá trị null để tránh lỗi
-        }
+          [Op.or]: searchConditions, // Tìm kiếm theo nhiều điều kiện
+        },
+        attributes: ["id", "username", "email", "phonenumber", "avatar", "realname"], // Chỉ lấy các field cần thiết
+        logging: console.log, // Thêm dòng này để xem SQL Query
+
       });
   
-      if (!dataexist) {
-        return { error: "Không tìm thấy người dùng này.", status: 600 };
+      if (!users.length) {
+        return { error: "Không tìm thấy người dùng phù hợp.", status: 600 };
       }
   
-      return {
-        userId: dataexist.id,
-        username: dataexist.username,
-        email: dataexist.email,
-        phonenumber: dataexist.phonenumber,
-        avatar: dataexist.avatar,
-        realname: dataexist.realname
-      };
+      return users; // Trả về danh sách người dùng tìm được
     } catch (error) {
       console.error("Search Error:", error);
       return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
     }
   };
+  
 
   const userProfile = async (userId) => {
     try {
