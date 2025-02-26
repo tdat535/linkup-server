@@ -198,7 +198,9 @@ const useSearch = async (userData) => {
         userId: dataexist.id,
         username: dataexist.username,
         email: dataexist.email,
-        phonenumber: dataexist.phonenumber
+        phonenumber: dataexist.phonenumber,
+        avatar: dataexist.avatar,
+        realname: dataexist.realname
       };
     } catch (error) {
       console.error("Search Error:", error);
