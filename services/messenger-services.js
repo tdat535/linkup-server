@@ -7,7 +7,7 @@ const createMessenger = async (messenger) => {
     try {
         const { senderId, receiverId } = messenger;
 
-        // Kiểm tra xem người gửi có follow người nhận với trạng thái 'accepted'
+        // Kiểm tra quan hệ follow hai chiều
         const followStatusReceiverToSender = await Follow.findOne({
             where: { followerId: senderId, followingId: receiverId, status: 'accepted' }
         });
@@ -16,30 +16,23 @@ const createMessenger = async (messenger) => {
             where: { followerId: receiverId, followingId: senderId, status: 'accepted' }
         });
 
-        // Nếu không có quan hệ follow accepted, không cho phép gửi tin nhắn
         if (!followStatusReceiverToSender || !followStatusSenderToReceiver) {
-            return { error: "Không thể gửi tin nhắn, bạn chưa có quan hệ follow với người này.", status: 400 };
+            return { error: "Hai người phải follow nhau mới có thể nhắn tin.", status: 400 };
         }
 
-        // Tạo tin nhắn mới
         const newMessenger = await Messenger.create({
             content: messenger.content,
             image: messenger.image,
-            senderId: messenger.senderId,
-            receiverId: messenger.receiverId
+            senderId,
+            receiverId
         });
 
-        return {
-            id: newMessenger.id,
-            content: newMessenger.content,
-            image: newMessenger.image,
-            senderId: newMessenger.senderId,
-            receiverId: newMessenger.receiverId
-        };
+        return newMessenger;
     } catch (error) {
-        throw new Error('Error creating messenger: ' + error.message);
+        throw new Error('Lỗi khi gửi tin nhắn: ' + error.message);
     }
 };
+
 
 // Lấy danh sách những người đã nhắn tin với user nhưng không bị trùng
 const getMessenger = async (userId) => {

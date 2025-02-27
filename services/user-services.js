@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user'); // Assuming you have a User model
 const RefreshToken = require('../models/refreshToken');
+const Follow = require('../models/follow');
 const { Op } = require("sequelize");
 
 const register = async (userData) => {
@@ -164,53 +165,56 @@ const logout = async (refreshToken) => {
 
 
 const useSearch = async (userData) => {
-    try {
-      // Kiểm tra xem có ít nhất một trong ba trường không trống
+  try {
       if (!userData.email && !userData.username && !userData.phonenumber) {
-        return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
+          return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
       }
-  
-      // Xử lý input trước khi tìm kiếm
-      if (userData.phonenumber && userData.phonenumber.startsWith("0")) {
-        userData.phonenumber = userData.phonenumber.trim();
-      } else if (userData.email && userData.email.includes("@gmail.com")) {
-        userData.email = userData.email.trim();
-      } else {
-        userData.username = userData.username.trim();
-      }
-  
-      // Tạo điều kiện tìm kiếm sử dụng LIKE để tìm các kết quả tương tự
-      const searchConditions = [];
-      if (userData.email) {
-        searchConditions.push({ email: { [Op.like]: `%${userData.email}%` } });
-      }
-      if (userData.username) {
-        searchConditions.push({ username: { [Op.like]: `%${userData.username}%` } });
-      }
-      if (userData.phonenumber) {
-        searchConditions.push({ phonenumber: { [Op.like]: `%${userData.phonenumber}%` } });
-      }
-  
-      // Tìm kiếm người dùng phù hợp
-      const users = await User.findAll({
-        where: {
-          [Op.or]: searchConditions, // Tìm kiếm theo nhiều điều kiện
-        },
-        attributes: ["id", "username", "email", "phonenumber", "avatar", "realname"], // Chỉ lấy các field cần thiết
-        logging: console.log, // Thêm dòng này để xem SQL Query
+      console.log("currentUserId:", userData.currentUser);
 
+
+      const searchConditions = [];
+      if (userData.email) searchConditions.push({ email: { [Op.like]: `%${userData.email}%` } });
+      if (userData.username) searchConditions.push({ username: { [Op.like]: `%${userData.username}%` } });
+      if (userData.phonenumber) searchConditions.push({ phonenumber: { [Op.like]: `%${userData.phonenumber}%` } });
+
+      const users = await User.findAll({
+          where: { [Op.or]: searchConditions },
+          attributes: ["id", "username", "email", "phonenumber", "avatar", "realname"],
       });
-  
+
       if (!users.length) {
-        return { error: "Không tìm thấy người dùng phù hợp.", status: 600 };
+          return { error: "Không tìm thấy người dùng phù hợp.", status: 600 };
       }
-  
-      return users; // Trả về danh sách người dùng tìm được
-    } catch (error) {
+
+      // Kiểm tra trạng thái follow
+      const usersWithStatus = await Promise.all(users.map(async (user) => {
+          if (user.id === userData.currentUser) return { ...user.toJSON(), status: "Bạn" };
+
+          const followRequest = await Follow.findOne({ where: { followerId: userData.currentUser, followingId: user.id } });
+          const followBack = await Follow.findOne({ where: { followerId: user.id, followingId: userData.currentUser } });
+
+          let status = "Kết bạn"; // Mặc định là "Kết bạn"
+
+          if (followRequest && followRequest.status === 'accepted' && followBack && followBack.status === 'accepted') {
+              status = "Đã là bạn bè"; // Cả hai đều đã chấp nhận kết bạn
+          } else if (followRequest && followRequest.status === 'accepted') {
+              status = "Đang chờ chấp nhận"; // Một bên đã chấp nhận, một bên chưa
+          }
+
+          console.log("followRequest:", followRequest);
+          console.log("followBack:", followBack);  
+          
+          return { ...user.toJSON(), status };
+          
+      }));
+
+      return usersWithStatus;
+  } catch (error) {
       console.error("Search Error:", error);
       return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
-    }
-  };
+  }
+};
+
   
 
   const userProfile = async (userId) => {
