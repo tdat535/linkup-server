@@ -196,7 +196,7 @@ const useSearch = async (userData) => {
           let status = "Kết bạn"; // Mặc định là "Kết bạn"
 
           if (followRequest && followRequest.status === 'accepted' && followBack && followBack.status === 'accepted') {
-              status = "Đã là bạn bè"; // Cả hai đều đã chấp nhận kết bạn
+              status = "Bạn bè"; // Cả hai đều đã chấp nhận kết bạn
           } else if (followRequest && followRequest.status === 'accepted') {
               status = "Đang chờ chấp nhận"; // Một bên đã chấp nhận, một bên chưa
           }
