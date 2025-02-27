@@ -44,7 +44,7 @@ const getMediaPosts = async (userId) => {
             },
             include: [{ 
                 model: User, 
-                attributes: ['username']  // Thêm thông tin username của người đăng bài
+                attributes: ['username', 'avatar']  // Thêm thông tin username của người đăng bài
             }]
         });
 
