@@ -2,20 +2,22 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const authenticateToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1]; // Lấy Bearer token từ header Authorization
+    const token = req.headers['authorization']?.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ error: 'Token không được cung cấp' });
+        return res.status(401).json({ error: 'No token provided' });
     }
 
-    // Giải mã token và xác thực người dùng
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
-            return res.status(403).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ error: 'Token expired' }); // 🔥 Trả về lỗi rõ ràng
+            }
+            return res.status(403).json({ error: 'Invalid token' });
         }
 
-        req.user = user; // Lưu thông tin người dùng vào request
-        next(); // Tiếp tục với route handler
+        req.user = user;
+        next();
     });
 };
 
