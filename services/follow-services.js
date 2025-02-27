@@ -85,39 +85,32 @@ const acceptFollow = async (followerId, followingId) => {
   }
 };
 
-
 const getFollow = async (userId) => {
   try {
-    // Kiểm tra userId có tồn tại không
     const user = await User.findByPk(userId);
-    // if (!user) {
-    //   return { error: "Người dùng không tồn tại.", status: 404 };
-    // }
+    if (!user) return { error: "Người dùng không tồn tại.", status: 404 };
 
-    // Tìm những người mà user đang follow và trạng thái là "accepted"
+    // Lấy danh sách người mà user đang follow
     const followingList = await Follow.findAll({
-      where: { followerId: userId, status: "accepted" },
-      include: [
-        { model: User, as: "Following", attributes: ["id", "username"] },
-      ],
+      where: { followerId: userId, status: 'accepted' },
+      include: [{ model: User, as: "FollowingUser", attributes: ["id", "username"] }]
     });
 
-    // Tìm những người đang follow user và trạng thái là "accepted"
+    // Lấy danh sách người đang follow user
     const followersList = await Follow.findAll({
-      where: { followingId: userId, status: "accepted" },
-      include: [
-        { model: User, as: "Followers", attributes: ["id", "username"] },
-      ],
+      where: { followingId: userId, status: 'accepted' },
+      include: [{ model: User, as: "Follower", attributes: ["id", "username"] }]
     });
 
     return {
       userId,
-      following: followingList.map((f) => f.Following),
-      followers: followersList.map((f) => f.Followers),
+      following: followingList.map((f) => f.FollowingUser),
+      followers: followersList.map((f) => f.Follower),
     };
   } catch (error) {
+    console.error("Lỗi khi lấy danh sách follow:", error);
     throw new Error("Lỗi khi lấy danh sách follow: " + error.message);
   }
 };
 
-module.exports = { createFollow, getFollow, getFollow, acceptFollow };
+module.exports = { createFollow, getFollow, acceptFollow };

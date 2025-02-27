@@ -1,49 +1,36 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');  // Import kết nối
-const User = require('./user'); // Import model User
+const { sequelize } = require('../config/database');
+const User = require('./user');
 
 const Follow = sequelize.define('Follow', {
   followerId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: {
-      model: User,
-      key: 'id'
-    }
+    references: { model: User, key: 'id' },
+    primaryKey: true // Đánh dấu là khóa chính
   },
   followingId: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: {
-      model: User,
-      key: 'id'
-    }
+    references: { model: User, key: 'id' },
+    primaryKey: true // Đánh dấu là khóa chính
   },
   followedAt: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: DataTypes.NOW // Lưu thời gian theo dõi
+    defaultValue: DataTypes.NOW
   },
   status: {
     type: DataTypes.ENUM('pending', 'accepted', 'blocked', 'unfollowed'),
     allowNull: false,
-    defaultValue: 'accepted' // Mặc định là đang theo dõi
+    defaultValue: 'accepted'
   }
-}, {
-  timestamps: false
-});
+}, { timestamps: false });
 
-// Định nghĩa quan hệ Follow giữa User với chính nó
-User.belongsToMany(User, { 
-  through: Follow,
-  as: 'Followers',
-  foreignKey: 'followingId'
-});
+User.hasMany(Follow, { foreignKey: 'followerId', as: 'Following' });
+User.hasMany(Follow, { foreignKey: 'followingId', as: 'Followers' });
 
-User.belongsToMany(User, { 
-  through: Follow,
-  as: 'Following',
-  foreignKey: 'followerId'
-});
+Follow.belongsTo(User, { foreignKey: 'followerId', as: 'Follower' });
+Follow.belongsTo(User, { foreignKey: 'followingId', as: 'FollowingUser' });
 
 module.exports = Follow;

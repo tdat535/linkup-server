@@ -28,7 +28,7 @@ router.post("/createFollow", authenticateToken, async (req, res) => {
 
 router.get("/getFollow", authenticateToken, async (req, res) => {  
     try {
-        const Follow = await getFollow();
+        const Follow = await getFollow(req.query.userId);
 
         res.status(200).send({
             isSuccess:true,
