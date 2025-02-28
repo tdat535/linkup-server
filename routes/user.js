@@ -134,15 +134,25 @@ router.post("/search", authenticateToken, async (req, res) => {
         });
         
     } catch (error) {
-        res.status(400).send('Something went wrong!');
+        res.status(400).send('Something went wrong!'); 
         console.log(error);    
     }
 });
 
 router.get("/profile", authenticateToken, async (req, res) => {
     try {
-        const user = req.query.user_id;
-        const result = await userProfile(user);
+        const userId = req.query.user_id; // ID của người cần xem
+        const currentUserId = req.query.currentUserId; // ID của người đang đăng nhập
+
+        if (!userId || !currentUserId) {
+            return res.status(400).send({
+                isSuccess: false,
+                status: 400,
+                message: "Thiếu user_id hoặc currentUserId",
+            });
+        }
+
+        const result = await userProfile(userId, currentUserId);
         res.status(200).send({
             isSuccess: true,
             status: 200,
@@ -150,10 +160,15 @@ router.get("/profile", authenticateToken, async (req, res) => {
             data: result
         });
     } catch (error) {
-        res.status(400).send('Something went wrong!');
-        console.log(error);    
+        console.error("Profile Error:", error);
+        res.status(500).send({
+            isSuccess: false,
+            status: 500,
+            message: "Lỗi xảy ra khi lấy thông tin người dùng"
+        });
     }
 });
+
 
 
 module.exports = router

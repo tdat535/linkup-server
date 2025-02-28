@@ -7,6 +7,8 @@ const RefreshToken = require('../models/refreshToken');
 const Follow = require('../models/follow');
 const { Op } = require("sequelize");
 
+const { getFollow } = require('./follow-services');
+
 const register = async (userData) => {
     try {
         // Kiểm tra xem username đã tồn tại trong database chưa
@@ -186,59 +188,58 @@ const useSearch = async (userData) => {
           return { error: "Không tìm thấy người dùng phù hợp.", status: 600 };
       }
 
-      // Kiểm tra trạng thái follow
-      const usersWithStatus = await Promise.all(users.map(async (user) => {
-          if (user.id === userData.currentUser) return { ...user.toJSON(), status: "Bạn" };
 
-          const followRequest = await Follow.findOne({ where: { followerId: userData.currentUser, followingId: user.id } });
-          const followBack = await Follow.findOne({ where: { followerId: user.id, followingId: userData.currentUser } });
 
-          let status = "Kết bạn"; // Mặc định là "Kết bạn"
+      return users;
 
-          if (followRequest && followRequest.status === 'accepted' && followBack && followBack.status === 'accepted') {
-              status = "Bạn bè"; // Cả hai đều đã chấp nhận kết bạn
-          } else if (followRequest && followRequest.status === 'accepted') {
-              status = "Đang chờ chấp nhận"; // Một bên đã chấp nhận, một bên chưa
-          }
-
-          console.log("followRequest:", followRequest);
-          console.log("followBack:", followBack);  
-          
-          return { ...user.toJSON(), status };
-          
-      }));
-
-      return usersWithStatus;
   } catch (error) {
       console.error("Search Error:", error);
       return { error: "Lỗi xảy ra khi tìm kiếm", status: 601 };
   }
 };
 
-  
-
-  const userProfile = async (userId) => {
+const userProfile = async (userId, currentUserId) => {
     try {
-      const user = await User.findByPk(userId);
-  
-      if (!user) {
-        return { error: "Không tìm thấy người dùng", status: 404 };
-      }
-  
-      return {
-        UserId: user.id,
-        username: user.username,
-        umail: user.email,
-        realname: user.realname,
-        phonenumber: user.phonenumber,
-        avatar: user.avatar,
-      };
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return { error: "Không tìm thấy người dùng", status: 404 };
+        }
+
+        // 🔥 Lấy danh sách follow
+        const followData = await getFollow(userId);
+
+        // 🔥 Nếu xem profile của người khác, kiểm tra trạng thái follow
+        let status = null;
+        if (userId !== currentUserId) {
+            const followRequest = await Follow.findOne({ where: { followerId: currentUserId, followingId: userId } });
+            const followBack = await Follow.findOne({ where: { followerId: userId, followingId: currentUserId } });
+
+            status = "Kết bạn"; // Mặc định
+
+            if (followRequest && followRequest.status === 'accepted' && followBack && followBack.status === 'accepted') {
+                status = "Bạn bè";
+            } else if (followRequest && followRequest.status === 'accepted') {
+                status = "Đang chờ chấp nhận";
+            }
+        }
+
+        return {
+            UserId: user.id,
+            username: user.username,
+            email: user.email,
+            realname: user.realname,
+            phonenumber: user.phonenumber,
+            avatar: user.avatar,
+            following: followData.following, 
+            followers: followData.followers, 
+            status, 
+        };
     } catch (error) {
-      console.error("Profile Error:", error);
-      return { error: "Lỗi xảy ra khi lấy thông tin người dùng", status: 500 };
+        console.error("Profile Error:", error);
+        return { error: "Lỗi xảy ra khi lấy thông tin người dùng", status: 500 };
     }
-  };
+};
   
-
-
+  
 module.exports = { register, login, createNewAccessToken, logout, useSearch, logout, userProfile};

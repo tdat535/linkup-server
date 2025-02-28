@@ -93,13 +93,13 @@ const getFollow = async (userId) => {
     // Lấy danh sách người mà user đang follow
     const followingList = await Follow.findAll({
       where: { followerId: userId, status: 'accepted' },
-      include: [{ model: User, as: "FollowingUser", attributes: ["id", "username"] }]
+      include: [{ model: User, as: "FollowingUser", attributes: ["id", "username", "avatar"] }]
     });
 
     // Lấy danh sách người đang follow user
     const followersList = await Follow.findAll({
       where: { followingId: userId, status: 'accepted' },
-      include: [{ model: User, as: "Follower", attributes: ["id", "username"] }]
+      include: [{ model: User, as: "Follower", attributes: ["id", "username", "avatar"] }]
     });
 
     return {
