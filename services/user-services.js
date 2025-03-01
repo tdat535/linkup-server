@@ -187,9 +187,6 @@ const useSearch = async (userData) => {
       if (!users.length) {
           return { error: "Không tìm thấy người dùng phù hợp.", status: 600 };
       }
-
-
-
       return users;
 
   } catch (error) {
