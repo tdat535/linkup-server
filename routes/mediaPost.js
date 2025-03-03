@@ -64,7 +64,7 @@ router.post("/createPost", authenticateToken, async (req, res) => {
         console.error('Error creating media post:', error);
         res.status(400).send({
             isSuccess: false,
-            message: 'Đã có lỗi xảy ra khi tạo bài viết. Chi tiết: ' + error.message
+            error: 'Đã có lỗi xảy ra khi tạo bài viết. Chi tiết: ' + error.message
         });
     }
 });
