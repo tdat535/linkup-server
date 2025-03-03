@@ -20,6 +20,9 @@ app.use('/api/comment', require('./routes/comment'));
 app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
 app.use('/api/follow',require('./routes/follow'));
+app.use("/upload", require("./routes/upload"));
+
+app.use("/uploads", express.static("uploads")); // Cho phép truy cập ảnh đã tải lên
 
 // Đọc file API document
 const path = require('path');

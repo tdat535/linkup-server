@@ -46,17 +46,28 @@ router.get("/getAll",  async (req, res) => {
 
 router.post("/createPost", authenticateToken, async (req, res) => {  
     try {
+        if (!req.body.content || !req.body.userId) {
+            return res.status(400).send({
+                isSuccess: false,
+                message: 'Thiếu thông tin bài viết hoặc người dùng.'
+            });
+        }
+        
         const mediaPost = await createMediaPost(req.body);
         res.status(200).send({
-            isSuccess:true,
+            isSuccess: true,
             status: 200,
             message: "Tạo bài viết thành công",
             data: mediaPost
         });
     } catch (error) {
-        res.status(400).send('Something went wrong!');
-        console.log(error);    
+        console.error('Error creating media post:', error);
+        res.status(400).send({
+            isSuccess: false,
+            message: 'Đã có lỗi xảy ra khi tạo bài viết. Chi tiết: ' + error.message
+        });
     }
 });
+
 
 module.exports = router;
