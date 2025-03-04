@@ -1,11 +1,20 @@
 require('dotenv').config();
 const express = require('express');
-const { sequelize, connectDB } = require('./config/database');
+const path = require('path'); // Đảm bảo require path sớm
+const fs = require('fs');
 const cors = require("cors");
+const { sequelize, connectDB } = require('./config/database');
 
 const app = express();
+app.use(cors()); // Đặt trước express.json()
 app.use(express.json());
-app.use(cors());
+
+// Kiểm tra và tạo thư mục uploads nếu chưa tồn tại
+const uploadPath = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+app.use('/uploads', express.static(uploadPath));
 
 // Import models
 require('./models/user');
@@ -14,21 +23,17 @@ require('./models/comment');
 require('./models/like');
 require('./models/messenger');
 
+// Routes
 app.use('/api/auth', require('./routes/user'));
 app.use('/api/media', require('./routes/mediaPost'));
 app.use('/api/comment', require('./routes/comment'));
 app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
-app.use('/api/follow',require('./routes/follow'));
+app.use('/api/follow', require('./routes/follow'));
 app.use("/upload", require("./routes/upload"));
 
-app.use("/uploads", express.static("uploads")); // Cho phép truy cập ảnh đã tải lên
-
-// Đọc file API document
-const path = require('path');
+// API Documentation (Redoc)
 const redoc = require('redoc-express');
-const fs = require('fs');
-// Kiểm tra file JSON trước khi gửi
 app.get('/docs/api-documents.json', (req, res) => {
   const filePath = path.join(__dirname, 'docs', 'api-documents.json');
   if (!fs.existsSync(filePath)) {
@@ -37,21 +42,20 @@ app.get('/docs/api-documents.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.sendFile(filePath);
 });
-// Serve API documentation using Redoc
 app.get('/docs', redoc({
   title: 'LinkUp API Docs',
   specUrl: '/docs/api-documents.json',
 }));
 
-
 // Kết nối DB và chạy server
 connectDB().then(() => {
-  sequelize.sync({ alter: true })
+  sequelize.sync() // Loại bỏ `alter: true` nếu không cần thiết
     .then(() => console.log('✅ Đã đồng bộ database'))
     .catch(err => console.error('❌ Có lỗi khi đồng bộ database:', err));
 
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`📄 API Docs: http://localhost:${PORT}/docs`);
   });
 });
