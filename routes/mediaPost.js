@@ -2,6 +2,20 @@ const express = require("express");
 const { getMediaPosts, createMediaPost, getAll } = require("../services/mediaPost-services");
 const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
+
+// Cấu hình Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Lưu vào thư mục uploads
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Đặt tên file duy nhất
+  }
+});
+
+const upload = multer({ storage });
 
 router.get("/getPost", authenticateToken,  async (req, res) => {
     try {
@@ -44,30 +58,34 @@ router.get("/getAll",  async (req, res) => {
     }
 });
 
-router.post("/createPost", authenticateToken, async (req, res) => {  
+router.post("/createPost", authenticateToken, upload.single("image"), async (req, res) => {  
     try {
-        if (!req.body.content || !req.body.userId) {
-            return res.status(400).send({
-                isSuccess: false,
-                message: 'Thiếu thông tin bài viết hoặc người dùng.'
-            });
-        }
+        const { content, userId } = req.body;
         
-        const mediaPost = await createMediaPost(req.body);
-        res.status(200).send({
+        if (!content || !userId) {
+            return res.status(400).json({ isSuccess: false, message: "Thiếu thông tin bài viết hoặc người dùng." });
+        }
+
+        let imagePath = null;
+        if (req.file) {
+            imagePath = `/uploads/${req.file.filename}`; // Đường dẫn ảnh
+        }
+
+        const mediaPost = await createMediaPost({ content, userId, image: imagePath });
+
+        res.status(200).json({
             isSuccess: true,
             status: 200,
             message: "Tạo bài viết thành công",
-            data: mediaPost
+            data: mediaPost,
         });
     } catch (error) {
-        console.error('Error creating media post:', error);
-        res.status(400).send({
+        console.error("Error creating media post:", error);
+        res.status(400).json({
             isSuccess: false,
-            error: 'Đã có lỗi xảy ra khi tạo bài viết. Chi tiết: ' + error.message
+            error: "Đã có lỗi xảy ra khi tạo bài viết. Chi tiết: " + error.message,
         });
     }
 });
-
 
 module.exports = router;
