@@ -24,7 +24,7 @@ const createComment = async (comment) => {
 const getComments = async (postId) => {
     if (!postId) {
         return {
-            error: 'post_id is required to get comments'
+            error: 'postId is required to get comments'
         };
     }
 

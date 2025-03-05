@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/getLikes", authenticateToken, async (req, res) => {
     try {
-        const likes = await getLikes(req.query.post_id);
+        const likes = await getLikes(req.query.postId);
         res.status(200).send({
             isSuccess:true,
             status: 200,

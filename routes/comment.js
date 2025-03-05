@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/getComments", authenticateToken, async (req, res) => {
     try {
-        const comments = await getComments(req.query.post_id);
+        const comments = await getComments(req.query.postId);
         res.status(200).send({
             isSuccess:true,
             status: 200,

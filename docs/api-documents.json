@@ -144,10 +144,44 @@
         }
       }
     },
+    "/api/auth/profile": {
+      "post": {
+        "summary": "Hiện thị trang cá nhân",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "description": "ID của người dùng cần hiện thị trang cá nhận"
+          },
+          {
+            "name": "currentUserId",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "description": "ID của người dùng hiện tại"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Tìm kím thành công" },
+          "400": {
+            "description": "Thông tin người dùng không đúng hoặc không tồn tại"
+          }
+        }
+      }
+    },
     "/api/media/getPost": {
       "get": {
         "summary": "Lấy danh sách bài viết",
         "tags": ["Media"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "description": "ID của người dùng hiện tại"
+          }
+        ],
         "responses": {
           "200": { "description": "Lấy danh sách bài viết thành công" },
           "400": { "description": "Lỗi không xác định" }
@@ -159,7 +193,7 @@
         ]
       }
     },
-    "/api/media/upPost": {
+    "/api/media/createPost": {
       "post": {
         "summary": "Tạo bài viết mới",
         "tags": ["Media"],
@@ -194,7 +228,7 @@
         "tags": ["Comment"],
         "parameters": [
           {
-            "name": "post_id",
+            "name": "postId",
             "in": "query",
             "schema": {
               "type": "int"
@@ -426,7 +460,7 @@
         "tags": ["Like"],
         "parameters": [
           {
-            "name": "post_id",
+            "name": "postId",
             "in": "query",
             "schema": {
               "type": "int"

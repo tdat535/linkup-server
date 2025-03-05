@@ -24,11 +24,11 @@ const upload = multer({ storage, fileFilter });
 
 router.get("/getPost", authenticateToken, async (req, res) => {
   try {
-    const userId = req.query.user_id;
+    const userId = req.query.userId;
     if (!userId) {
       return res.status(400).send({
         isSuccess: false,
-        message: "Missing user_id parameter",
+        message: "Missing userId parameter",
       });
     }
 
