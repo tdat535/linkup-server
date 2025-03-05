@@ -29,8 +29,7 @@
                   "username": { "type": "string" },
                   "email": { "type": "string" },
                   "password": { "type": "string" },
-                  "phonenumber": { "type": "string" },
-                  "realname": { "type": "string" }
+                  "phonenumber": { "type": "string" }
                 }
               }
             }
@@ -52,7 +51,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "username": { "type": "string" },
+                  "email": { "type": "string" },
                   "password": { "type": "string" }
                 }
               }
