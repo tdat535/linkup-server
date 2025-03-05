@@ -6,7 +6,13 @@ const cors = require("cors");
 const { sequelize, connectDB } = require('./config/database');
 
 const app = express();
-app.use(cors()); // Đặt trước express.json()
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://api-linkup.id.vn'], // Cấp phép các domain gửi yêu cầu
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'], // Các header cần thiết
+};
+
+app.use(cors(corsOptions)); // Đảm bảo cấu hình này được đặt đúng
 app.use(express.json());
 
 // Kiểm tra và tạo thư mục uploads nếu chưa tồn tại
