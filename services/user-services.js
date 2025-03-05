@@ -165,14 +165,12 @@ const logout = async (refreshToken) => {
     }
 };
 
-
 const useSearch = async (userData) => {
   try {
       if (!userData.email && !userData.username && !userData.phonenumber) {
           return { error: "Vui lòng nhập username, email hoặc số điện thoại để tìm kiếm.", status: 400 };
       }
       console.log("currentUserId:", userData.currentUser);
-
 
       const searchConditions = [];
       if (userData.email) searchConditions.push({ email: { [Op.like]: `%${userData.email}%` } });
@@ -237,6 +235,5 @@ const userProfile = async (userId, currentUserId) => {
         return { error: "Lỗi xảy ra khi lấy thông tin người dùng", status: 500 };
     }
 };
-  
   
 module.exports = { register, login, createNewAccessToken, logout, useSearch, logout, userProfile};

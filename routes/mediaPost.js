@@ -10,16 +10,7 @@ const multer = require("multer");
 const path = require("path");
 
 // Cấu hình Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Lưu vào thư mục uploads
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Đặt tên file duy nhất
-  },
-});
-
-// Kiểm tra định dạng file
+const storage = multer.memoryStorage(); // Lưu trữ ảnh trong bộ nhớ thay vì lưu trên đĩa
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"]; // Chỉ cho phép JPG, PNG, WEBP
   if (allowedTypes.includes(file.mimetype)) {
@@ -91,7 +82,7 @@ router.post(
 
       let imagePath = null;
       if (req.file) {
-        imagePath = `/uploads/${req.file.filename}`; // Đường dẫn ảnh
+        imagePath = req.file;  // Đảm bảo Multer file được gửi đúng
       }
 
       const mediaPost = await createMediaPost({
@@ -115,5 +106,6 @@ router.post(
     }
   }
 );
+
 
 module.exports = router;
