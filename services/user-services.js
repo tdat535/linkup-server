@@ -12,7 +12,7 @@ const { getFollow } = require('./follow-services');
 const register = async (userData) => {
     try {
         // Kiểm tra xem username đã tồn tại trong database chưa
-        const existingUser = await User.findOne({ where: { username: userData.username } });
+        const existingUser = await User.findOne({ where: { email: userData.email } });
 
         if (/\s/.test(userData.username)) {
             return { error: "Username không được chứa khoảng trắng", status: 400 };
@@ -22,7 +22,7 @@ const register = async (userData) => {
             return { error: "Vui lòng điền đầy đủ thông tin", status: 400 };
         }
         if (existingUser) {
-            return { error: "Username đã tồn tại", status: 400 };
+            return { error: "Email đã tồn tại", status: 400 };
         }
         if (10 > userData.phonenumber.length || 11 < userData.phonenumber.length){
             return { error: "Số điện thoại sai định dạng", status: 401 };
@@ -36,7 +36,6 @@ const register = async (userData) => {
             email: userData.email,
             phonenumber: userData.phonenumber,
             password: hashedPassword,
-            realname: userData.realname || null,
             avatar: "https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg",
         });
         await newUser.save();
@@ -56,7 +55,7 @@ const register = async (userData) => {
 
 const login = async (userData) => {
     try {
-        const user = await User.findOne({ where: { username: userData.username } });
+        const user = await User.findOne({ where: { email: userData.email } });
 
         if (!user) {
             return { error: "Người dùng không tồn tại", status: 404 };
@@ -86,7 +85,6 @@ const login = async (userData) => {
             UserId: user.id,
             Username: user.username,
             Email: user.email,
-            Realname: user.realname,
             Phonenumber: user.phonenumber,
             Avatar: user.avatar,
             UserType: user.userType || "user",
