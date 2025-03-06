@@ -86,6 +86,14 @@ router.post(
         imagePath = req.file; // Đảm bảo Multer file được gửi đúng
       }
 
+      const apiKey = req.headers["api_key"];
+      if (!apiKey || apiKey !== process.env.CLOUDINARY_API_KEY) {
+        return res.status(400).json({
+          isSuccess: false,
+          message: "Must supply api_key",
+        });
+      }
+
       const mediaPost = await createMediaPost({
         content,
         userId,
