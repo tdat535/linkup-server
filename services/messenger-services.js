@@ -103,21 +103,21 @@ const getMessengerDetail = async (userId, otherUserId) => {
                     { senderId: otherUserId, receiverId: userId }
                 ]
             },
-            order: [['createdAt', 'ASC']],
+            order: [['createdAt', 'DESC']],
             include: [
                 {
                     model: User,
-                    as: 'sender',
+                    as: 'Sender',  // Alias mới
                     attributes: ['id', 'username', 'avatar']
                 },
                 {
                     model: User,
-                    as: 'receiver',
+                    as: 'Receiver',  // Alias mới
                     attributes: ['id', 'username', 'avatar']
                 }
             ]
         });
-
+        
         return {
             success: true,
             data: messages
@@ -126,6 +126,5 @@ const getMessengerDetail = async (userId, otherUserId) => {
         throw new Error('Error getting messenger details: ' + error.message);
     }
 };
-
 
 module.exports = { createMessenger, getMessenger, getMessengerDetail };

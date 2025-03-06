@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');  // Import kết nối
-const User = require('./user'); // Import sau khi đã định nghĩa User
+const User = require('./user'); // Import model User
 
 // Định nghĩa model Messenger
 const Messenger = sequelize.define('Messenger', {
@@ -28,10 +28,7 @@ const Messenger = sequelize.define('Messenger', {
 });
 
 // Thiết lập quan hệ với User
-Messenger.belongsTo(User, { foreignKey: 'senderId', onDelete: 'CASCADE' });
-User.hasMany(Messenger, { foreignKey: 'senderId', onDelete: 'CASCADE' });
-
-Messenger.belongsTo(User, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
-User.hasMany(Messenger, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
+Messenger.belongsTo(User, { foreignKey: 'senderId', as: 'Sender', onDelete: 'CASCADE' });
+Messenger.belongsTo(User, { foreignKey: 'receiverId', as: 'Receiver', onDelete: 'CASCADE' });
 
 module.exports = Messenger;
