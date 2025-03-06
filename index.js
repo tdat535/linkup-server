@@ -9,7 +9,7 @@ const app = express();
 const corsOptions = {
   origin: ['http://localhost:3000', 'http://api-linkup.id.vn', 'http://localhost:5173'], // Cấp phép các domain gửi yêu cầu
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization','api_key']
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions)); // Đảm bảo cấu hình này được đặt đúng
