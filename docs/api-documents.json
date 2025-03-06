@@ -144,7 +144,7 @@
       }
     },
     "/api/auth/profile": {
-      "post": {
+      "get": {
         "summary": "Hiện thị trang cá nhân",
         "tags": ["Auth"],
         "parameters": [
