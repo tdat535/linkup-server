@@ -95,7 +95,7 @@ const getMessengerDetail = async (userId, otherUserId) => {
             return { error: "Bạn không có quyền xem tin nhắn này do không có quan hệ follow hợp lệ.", status: 400 };
         }
 
-        // Lấy tin nhắn giữa hai người
+        // Lấy tin nhắn giữa hai người cùng với thông tin người gửi và người nhận
         const messages = await Messenger.findAll({
             where: {
                 [Op.or]: [
@@ -103,7 +103,19 @@ const getMessengerDetail = async (userId, otherUserId) => {
                     { senderId: otherUserId, receiverId: userId }
                 ]
             },
-            order: [['createdAt', 'ASC']]
+            order: [['createdAt', 'ASC']],
+            include: [
+                {
+                    model: User,
+                    as: 'sender',
+                    attributes: ['id', 'username', 'avatar']
+                },
+                {
+                    model: User,
+                    as: 'receiver',
+                    attributes: ['id', 'username', 'avatar']
+                }
+            ]
         });
 
         return {
@@ -114,5 +126,6 @@ const getMessengerDetail = async (userId, otherUserId) => {
         throw new Error('Error getting messenger details: ' + error.message);
     }
 };
+
 
 module.exports = { createMessenger, getMessenger, getMessengerDetail };
