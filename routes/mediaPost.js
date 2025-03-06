@@ -68,21 +68,22 @@ router.post(
   authenticateToken,
   upload.single("image"),
   async (req, res) => {
+    console.log("req.file:", req.file);
+    console.log("req.body:", req.body);
+
     try {
       const { content, userId } = req.body;
 
       if (!content || !userId) {
-        return res
-          .status(400)
-          .json({
-            isSuccess: false,
-            message: "Thiếu thông tin bài viết hoặc người dùng.",
-          });
+        return res.status(400).json({
+          isSuccess: false,
+          message: "Thiếu thông tin bài viết hoặc người dùng.",
+        });
       }
 
       let imagePath = null;
       if (req.file) {
-        imagePath = req.file;  // Đảm bảo Multer file được gửi đúng
+        imagePath = req.file; // Đảm bảo Multer file được gửi đúng
       }
 
       const mediaPost = await createMediaPost({
@@ -106,6 +107,5 @@ router.post(
     }
   }
 );
-
 
 module.exports = router;

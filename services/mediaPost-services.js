@@ -69,9 +69,6 @@ const createMediaPost = async (mediaPostData) => {
   }
 };
 
-
-
-
 const getMediaPosts = async (userId) => {
   try {
     // Tìm danh sách những người mà user đang theo dõi và trạng thái là "accepted"
