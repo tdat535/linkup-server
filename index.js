@@ -4,8 +4,12 @@ const path = require('path'); // Đảm bảo require path sớm
 const fs = require('fs');
 const cors = require("cors");
 const { sequelize, connectDB } = require('./config/database');
+const { initSocket } = require('./services/socket');
+const http = require("http");
 
-const app = express();
+const app = express(); // Khởi tạo app trước khi tạo server
+const server = http.createServer(app); // Tạo server HTTP
+
 const corsOptions = {
   origin: ['http://localhost:3000', 'http://api-linkup.id.vn', 'http://localhost:5173'], // Cấp phép các domain gửi yêu cầu
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -14,6 +18,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions)); // Đảm bảo cấu hình này được đặt đúng
 app.use(express.json());
+initSocket(server);
 
 // Kiểm tra và tạo thư mục uploads nếu chưa tồn tại
 const uploadPath = path.join(__dirname, 'uploads');
@@ -60,7 +65,7 @@ connectDB().then(() => {
     .catch(err => console.error('❌ Có lỗi khi đồng bộ database:', err));
 
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  server.listen(PORT, () => { // Sử dụng server thay vì app.listen
     console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`📄 API Docs: http://localhost:${PORT}/docs`);
   });

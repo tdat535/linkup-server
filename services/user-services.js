@@ -15,20 +15,40 @@ const register = async (userData) => {
         const existingUser = await User.findOne({ where: { email: userData.email } });
 
         if (/\s/.test(userData.username)) {
-            return { error: "Username không được chứa khoảng trắng", status: 400 };
+            return {                 
+                isSuccess: false,
+                status: 400,
+                error: "Username không được chứa khoảng trắng" 
+            };
         }
 
         if(!userData.username || !userData.password || !userData.email || !userData.phonenumber){
-            return { error: "Vui lòng điền đầy đủ thông tin", status: 400 };
+            return { 
+                isSuccess: false,
+                status: 400,
+                error: "Vui lòng điền đầy đủ thông tin", 
+             };
         }
         if (existingUser) {
-            return { error: "Email đã tồn tại", status: 400 };
+            return { 
+                isSuccess: false,
+                status: 400,
+                error: "Username đã tồn tại",  
+            };
         }
         if (10 > userData.phonenumber.length || 11 < userData.phonenumber.length){
-            return { error: "Số điện thoại sai định dạng", status: 401 };
+            return { 
+                isSuccess: false,
+                status: 400,
+                error: "Số điện thoại sai định dạng",  
+            };
         }
         if (!userData.email.endsWith("@gmail.com")){
-            return { error: "Email sai định dạng", status: 401 };
+            return { 
+                isSuccess: false,
+                status: 400,
+                error: "Email sai định dạng",  
+            };
         }
         const hashedPassword = await bcrypt.hash(userData.password, 10);
         const newUser = new User({
@@ -40,6 +60,9 @@ const register = async (userData) => {
         });
         await newUser.save();
         return {
+            isSuccess: true,
+            status: 200,
+            message: "Đăng ký thành công",
             UserId: newUser.id,
             Username: newUser.username,
             Email: newUser.email || null,
@@ -58,12 +81,20 @@ const login = async (userData) => {
         const user = await User.findOne({ where: { email: userData.email } });
 
         if (!user) {
-            return { error: "Người dùng không tồn tại", status: 404 };
+            return { 
+                isSuccess: false,
+                status: 404,
+                error: "Người dùng không tồn tại" 
+            };
         }
 
         const isPasswordValid = await bcrypt.compare(userData.password, user.password);
         if (!isPasswordValid) {
-            return { error: "Sai mật khẩu", status: 401 };
+            return { 
+                isSuccess: false,
+                status: 404,
+                error: "Sai mật khẩu"
+            };
         }
 
         const accessToken = generateAccessToken(user.id);
@@ -80,6 +111,9 @@ const login = async (userData) => {
         // }
 
         return {
+            isSuccess: true,
+            status: 200,
+            message: "Đăng nhập thành công",
             AccessToken: accessToken,
             RefreshToken: refreshToken,
             UserId: user.id,
@@ -98,14 +132,22 @@ const login = async (userData) => {
 const createNewAccessToken = async (token) => {
     try {
         if (!token) {
-            throw new Error('Refresh Token is required');
+            return { 
+                isSuccess: false,
+                status: 404,
+                error: "Refresh Token is required" 
+            };
         }
 
         // Kiểm tra Refresh Token có tồn tại trong database không
         const storedToken = await RefreshToken.findOne({ where: { token } });
 
         if (!storedToken) {
-            throw new Error('Invalid Refresh Token');
+            return { 
+                isSuccess: false,
+                status: 404,
+                error: "Invalid Refresh Token" 
+            };
         }
 
         // Giải mã Refresh Token
@@ -113,7 +155,11 @@ const createNewAccessToken = async (token) => {
         const user = await User.findByPk(decoded.id);
 
         if (!user) {
-            throw new Error('User not found');
+            return { 
+                isSuccess: false,
+                status: 404,
+                error: "User not found" 
+            };
         }
 
         // Tạo Access Token mới
@@ -154,8 +200,9 @@ const logout = async (refreshToken) => {
         await existingToken.destroy();
 
         return {
+            isSuccess: true,
+            status: 200,
             message: "Người dùng đã đăng xuất thành công",
-            status: 200
         };
     } catch (error) {
         console.error("Logout Error:", error);
@@ -183,7 +230,12 @@ const useSearch = async (userData) => {
       if (!users.length) {
           return { error: "Không tìm thấy người dùng phù hợp.", status: 600 };
       }
-      return users;
+      return {
+        isSuccess: true,
+        status: 200,
+        message: "Tìm thấy người dùng",
+        data: users
+      };
 
   } catch (error) {
       console.error("Search Error:", error);
@@ -218,6 +270,9 @@ const userProfile = async (userId, currentUserId) => {
         }
 
         return {
+            isSuccess: true,
+            status: 200,
+            message: "Hiện thị trang cấ nhân của người dùng",
             UserId: user.id,
             username: user.username,
             email: user.email,

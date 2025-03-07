@@ -1,174 +1,147 @@
 const express = require("express");
-const { register, login, createNewAccessToken, useSearch, logout, userProfile } = require("../services/user-services");
-const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
+const {
+  register,
+  login,
+  createNewAccessToken,
+  useSearch,
+  logout,
+  userProfile,
+} = require("../services/user-services");
+const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-    try {
-        const result = await register(req.body);
+  try {
+    const result = await register(req.body);
 
-        if (result.error) {
-            return res.status(result.status).send({
-                isSuccess: false,
-                status: result.status,
-                message: result.error,
-            });
-        }
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Đăng ký thành công",
-            data: result
-        });
-        
-    } catch (error) {
-        res.status(400).send('Something went wrong!');
-        console.log(error);    
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
     }
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send("Something went wrong!");
+    console.log(error);
+  }
 });
 
 router.post("/login", async (req, res) => {
-    try {
-        const result = await login(req.body);
+  try {
+    const result = await login(req.body);
 
-        if (result.error) {
-            return res.status(result.status).send({
-                isSuccess: false,
-                status: result.status,
-                message: result.error,
-            });
-        }
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Đăng nhập thành công",
-            data: result
-        });
-        } catch (error) {
-        console.error(error);
-        res.status(500).send({
-            isSuccess: false,
-            status: 500,
-            message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
-        });
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
     }
+    res.status(200).send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      isSuccess: false,
+      status: 500,
+      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+    });
+  }
 });
-
 
 router.post("/refresh", async (req, res) => {
-    try {
-        const { refreshToken } = req.body;
-        const result = await createNewAccessToken(refreshToken);
+  try {
+    const { refreshToken } = req.body;
+    const result = await createNewAccessToken(refreshToken);
 
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Tạo access token thành công",
-            data: result
-        });
-    } catch (error) {
-        res.status(401).send({
-            IsSuccess: false,
-            Status: 401,
-            message: "Invalid Refresh Token"
-        });
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
     }
+    res.status(200).send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      isSuccess: false,
+      status: 500,
+      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+    });
+  }
 });
 
-router.post("/logout",  async (req, res) => {
-    try {
-        // Kiểm tra xem refreshToken có được gửi từ client không
-        const { refreshToken } = req.body;
-        if (!refreshToken) {
-            return res.status(400).send({
-                isSuccess: false,
-                message: "Refresh Token không được cung cấp",
-                status: 400
-            });
-        }
+router.post("/logout", async (req, res) => {
+  try {
+    // Kiểm tra xem refreshToken có được gửi từ client không
+    const { refreshToken } = req.body;
+    const result = await logout(refreshToken);
 
-        // Gọi hàm logout và truyền refreshToken vào
-        const result = await logout(refreshToken);
-
-        // Kiểm tra kết quả và trả về phản hồi
-        if (result.status === 200) {
-            res.status(200).send({
-                isSuccess: true,
-                status: 200,
-                message: result.message,
-            });
-        } else {
-            res.status(result.status).send({
-                isSuccess: false,
-                status: result.status,
-                message: result.error,
-            });
-        }
-    } catch (error) {
-        res.status(400).send({
-            isSuccess: false,
-            status: 400,
-            message: 'Something went wrong!',
-        });
-        console.error(error);    
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
     }
+    res.status(200).send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      isSuccess: false,
+      status: 500,
+      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+    });
+  }
 });
-
 
 router.post("/search", authenticateToken, async (req, res) => {
-    try {
-        const result = await useSearch(req.body);
+  try {
+    const result = await useSearch(req.body);
 
-        if (result.error) {
-            return res.status(result.status).send({
-                isSuccess: false,
-                status: result.status,
-                message: result.error,
-            });
-        }
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Đã tìm thấy người dùng",
-            data: result
-        });
-        
-    } catch (error) {
-        res.status(400).send('Something went wrong!'); 
-        console.log(error);    
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
     }
+    res.status(200).send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      isSuccess: false,
+      status: 500,
+      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+    });
+  }
 });
 
 router.get("/profile", authenticateToken, async (req, res) => {
-    try {
-        const userId = req.query.userId; // ID của người cần xem
-        const currentUserId = req.query.currentUserId; // ID của người đang đăng nhập
+  try {
+    const userId = req.query.userId; // ID của người cần xem
+    const currentUserId = req.query.currentUserId; // ID của người đang đăng nhập
+    const result = await userProfile(userId, currentUserId);
 
-        if (!userId || !currentUserId) {
-            return res.status(400).send({
-                isSuccess: false,
-                status: 400,
-                message: "Thiếu userId hoặc currentUserId",
-            });
-        }
-
-        const result = await userProfile(userId, currentUserId);
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Thông tin người dùng",
-            data: result
-        });
-    } catch (error) {
-        console.error("Profile Error:", error);
-        res.status(500).send({
-            isSuccess: false,
-            status: 500,
-            message: "Lỗi xảy ra khi lấy thông tin người dùng"
-        });
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
     }
+    res.status(200).send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      isSuccess: false,
+      status: 500,
+      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+    });
+  }
+  
 });
 
-
-
-module.exports = router
+module.exports = router;

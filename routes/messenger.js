@@ -7,31 +7,28 @@ const router = express.Router();
 router.get("/getMessenger", authenticateToken, async (req, res) => {
     try {
         const userId = req.query.userId;
-
-        if (!userId) {
-            return res.status(400).send({
+        const messengers = await getMessenger(userId);
+        
+        // Kiểm tra nếu không có lỗi và trả về dữ liệu
+        if (!messengers.isSuccess) {
+            return res.status(messengers.status).send({
                 isSuccess: false,
-                status: 400,
-                message: "Thiếu thông tin userId.",
+                status: messengers.status,
+                message: messengers.error || "Có lỗi xảy ra."
             });
         }
 
-        const messengers = await getMessenger(userId);
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Lấy danh sách cuộc trò chuyện thành công",
-            data: messengers,
-        });
+        res.status(200).send(messengers);
     } catch (error) {
         console.error(error);
         res.status(500).send({
             isSuccess: false,
             status: 500,
-            message: "Có lỗi xảy ra khi lấy danh sách cuộc trò chuyện.",
+            message: "Có lỗi xảy ra khi lấy danh sách cuộc trò chuyện."
         });
     }
 });
+
 
 // Gửi tin nhắn mới
 router.post("/createMessenger", authenticateToken, async (req, res) => {
@@ -74,37 +71,22 @@ router.get("/getMessengerDetail", authenticateToken, async (req, res) => {
     try {
         const userId = req.query.userId;
         const otherUserId = req.query.otherUserId;
-
-        if (!userId || !otherUserId) {
-            return res.status(400).send({
-                isSuccess: false,
-                status: 400,
-                message: "Thiếu thông tin userId hoặc otherUserId.",
-            });
-        }
-
         const messages = await getMessengerDetail(userId, otherUserId);
 
-        if (messages.error) {
+        if (!messages.isSuccess) {
             return res.status(messages.status).send({
                 isSuccess: false,
                 status: messages.status,
-                message: messages.error,
+                message: messages.error || "Có lỗi xảy ra."
             });
         }
-
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Lấy chi tiết tin nhắn thành công",
-            data: messages.data,
-        });
+        res.status(200).send(messages);
     } catch (error) {
         console.error(error);
         res.status(500).send({
             isSuccess: false,
             status: 500,
-            message: "Có lỗi xảy ra khi lấy tin nhắn.",
+            message: "Có lỗi xảy ra khi lấy danh sách cuộc trò chuyện."
         });
     }
 });
