@@ -89,7 +89,6 @@ const getMessenger = async (userId) => {
     for (const msg of messengers) {
       const conversationWith =
         msg.senderId === userId ? msg.receiverId : msg.senderId;
-      const userInfo = msg.senderId === userId ? msg.Receiver : msg.Sender;
 
       if (!uniqueConversations.has(conversationWith)) {
         uniqueConversations.set(conversationWith, {
@@ -109,11 +108,16 @@ const getMessenger = async (userId) => {
       }
     }
 
+    // Chuyển danh sách thành mảng và sắp xếp theo lastMessageTime mới nhất lên trên
+    const sortedConversations = Array.from(uniqueConversations.values()).sort(
+      (a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime)
+    );
+
     return {
       isSuccess: true,
       status: 200,
       message: "Lấy danh sách cuộc trò chuyện thành công",
-      data: Array.from(uniqueConversations.values()),
+      data: sortedConversations,
     };
   } catch (error) {
     return {
@@ -127,11 +131,11 @@ const getMessenger = async (userId) => {
 // Lấy chi tiết tin nhắn giữa user và một người cụ thể
 const getMessengerDetail = async (userId, otherUserId) => {
   try {
-    if (!userId & !otherUserId) {
+    if (!userId || !otherUserId) {
       return {
         isSuccess: false,
         status: 400,
-        error: "Thiếu thông tin userId.",
+        error: "Thiếu thông tin userId hoặc otherUserId.",
       };
     }
 
@@ -162,16 +166,16 @@ const getMessengerDetail = async (userId, otherUserId) => {
           { senderId: otherUserId, receiverId: userId },
         ],
       },
-      order: [["createdAt", "DESC"]],
+      order: [["createdAt", "ASC"]], // ASC để tin nhắn cũ nhất ở trên, mới nhất ở dưới
       include: [
         {
           model: User,
-          as: "Sender", // Alias mới
+          as: "Sender",
           attributes: ["id", "username", "avatar"],
         },
         {
           model: User,
-          as: "Receiver", // Alias mới
+          as: "Receiver",
           attributes: ["id", "username", "avatar"],
         },
       ],
@@ -180,11 +184,15 @@ const getMessengerDetail = async (userId, otherUserId) => {
     return {
       isSuccess: true,
       status: 200,
-      message: "Lấy danh sách cuộc trò chuyện thành công",
+      message: "Lấy danh sách tin nhắn thành công",
       data: messages,
     };
   } catch (error) {
-    throw new Error("Error getting messenger details: " + error.message);
+    return {
+      isSuccess: false,
+      status: 500,
+      error: `Error getting messenger details: ${error.message}`,
+    };
   }
 };
 
