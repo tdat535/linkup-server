@@ -21,16 +21,26 @@ const initSocket = (server) => {
         // Xử lý gửi tin nhắn
         socket.on('sendMessage', async (message) => {
             const { senderId, receiverId, content, image } = message;
-
+        
             // Lưu tin nhắn vào database
             const newMessage = await Messenger.create({ senderId, receiverId, content, image });
-
+        
+            // Lấy lại tin nhắn vừa tạo với thông tin người gửi và người nhận
+            const fullMessage = await Messenger.findOne({
+                where: { id: newMessage.id },
+                include: [
+                    { model: User, as: 'sender', attributes: ['id', 'username', 'avatar'] },
+                    { model: User, as: 'receiver', attributes: ['id', 'username', 'avatar'] }
+                ]
+            });
+        
             // Gửi tin nhắn ngay đến người nhận nếu họ đang online
             const receiverSocketId = onlineUsers.get(receiverId);
             if (receiverSocketId) {
-                io.to(receiverSocketId).emit('receiveMessage', newMessage);
+                io.to(receiverSocketId).emit('receiveMessage', fullMessage);
             }
         });
+        
 
         // Xử lý khi user disconnect
         socket.on('disconnect', () => {
