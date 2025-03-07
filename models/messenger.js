@@ -28,7 +28,8 @@ const Messenger = sequelize.define('Messenger', {
 });
 
 // Thiết lập quan hệ với User
-Messenger.belongsTo(User, { foreignKey: 'senderId', as: 'sender', onDelete: 'CASCADE' });
-Messenger.belongsTo(User, { foreignKey: 'receiverId', as: 'receiver', onDelete: 'CASCADE' });
+Messenger.belongsTo(User, { foreignKey: "senderId", as: "sender" });
+Messenger.belongsTo(User, { foreignKey: "receiverId", as: "receiver" });
+
 
 module.exports = Messenger;
