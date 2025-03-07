@@ -11,7 +11,7 @@ const app = express(); // Khởi tạo app trước khi tạo server
 const server = http.createServer(app); // Tạo server HTTP
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://api-linkup.id.vn', 'http://localhost:5173'], // Cấp phép các domain gửi yêu cầu
+  origin: ['http://localhost:3000', 'http://api-linkup.id.vn', 'http://localhost:5173', 'http://localhost:5174'], // Cấp phép các domain gửi yêu cầu
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
