@@ -1,6 +1,7 @@
+// app.js
 require('dotenv').config();
 const express = require('express');
-const path = require('path'); // Đảm bảo require path sớm
+const path = require('path');
 const fs = require('fs');
 const cors = require("cors");
 const { sequelize, connectDB } = require('./config/database');
@@ -18,7 +19,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions)); // Đảm bảo cấu hình này được đặt đúng
 app.use(express.json());
-initSocket(server);
+initSocket(server); // Khởi tạo socket.io và liên kết với server
 
 // Kiểm tra và tạo thư mục uploads nếu chưa tồn tại
 const uploadPath = path.join(__dirname, 'uploads');
