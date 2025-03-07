@@ -170,12 +170,12 @@ const getMessengerDetail = async (userId, otherUserId) => {
       include: [
         {
           model: User,
-          as: "Sender",
+          as: "sender",
           attributes: ["id", "username", "avatar"],
         },
         {
           model: User,
-          as: "Receiver",
+          as: "receiver",
           attributes: ["id", "username", "avatar"],
         },
       ],
