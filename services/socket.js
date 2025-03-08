@@ -8,7 +8,7 @@ const onlineUsers = new Map(); // Lưu user đang online
 const initSocket = (server) => {
     const io = new Server(server, {
         cors: {
-          origin: "*", // Hoặc thay bằng domain cụ thể nếu muốn
+          origin: "https://linkup-server-ir0g.onrender.com", // Hoặc thay bằng domain cụ thể nếu muốn
           methods: ["GET", "POST"],
           allowedHeaders: ["Content-Type", "Authorization"],
         },
