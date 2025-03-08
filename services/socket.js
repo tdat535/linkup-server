@@ -6,14 +6,14 @@ const User = require("../models/user"); // Import User model để sử dụng k
 const onlineUsers = new Map(); // Lưu user đang online
 
 const initSocket = (server) => {
-    const io = new Server(server, {
-        cors: {
-          origin: "https://linkup-server-ir0g.onrender.com", // Hoặc thay bằng domain cụ thể nếu muốn
-          methods: ["GET", "POST"],
-          allowedHeaders: ["Content-Type", "Authorization"],
-        },
-      });
-      
+  const io = new Server(server, {
+    cors: {
+      origin: ["https://linkup-server-ir0g.onrender.com", "https://your-frontend-domain.com"], 
+      methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    },
+    transports: ["websocket", "polling"],
+  });
 
   io.on("connection", (socket) => {
     console.log(`🔌 Client đã kết nối: ${socket.id}`);
