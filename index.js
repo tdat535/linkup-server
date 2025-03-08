@@ -11,22 +11,22 @@ const http = require("http");
 const app = express(); // Khởi tạo app trước khi tạo server
 const server = http.createServer(app); // Tạo server HTTP
 
-const corsOptions = {
-  origin: ['http://localhost:3000', 'http://api-linkup.id.vn'], // Cấp phép các domain gửi yêu cầu
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+// const corsOptions = {
+//   origin: ['http://localhost:3000', 'http://api-linkup.id.vn'], // Cấp phép các domain gửi yêu cầu
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// };
 
-app.use(cors(corsOptions)); // Đảm bảo cấu hình này được đặt đúng
+app.use(cors()); // Đảm bảo cấu hình này được đặt đúng
 app.use(express.json());
 initSocket(server); // Khởi tạo socket.io và liên kết với server
 
 // Kiểm tra và tạo thư mục uploads nếu chưa tồn tại
-const uploadPath = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-}
-app.use('/uploads', express.static(uploadPath));
+// const uploadPath = path.join(__dirname, 'uploads');
+// if (!fs.existsSync(uploadPath)) {
+//   fs.mkdirSync(uploadPath, { recursive: true });
+// }
+// app.use('/uploads', express.static(uploadPath));
 
 // Import models
 require('./models/user');
@@ -43,6 +43,10 @@ app.use('/api/like', require('./routes/like'));
 app.use('/api/messenger', require('./routes/messenger'));
 app.use('/api/follow', require('./routes/follow'));
 app.use("/upload", require("./routes/upload"));
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + "/test.html")
+})
 
 // API Documentation (Redoc)
 const redoc = require('redoc-express');
