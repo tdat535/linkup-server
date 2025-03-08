@@ -56,24 +56,23 @@ const getMessenger = async (userId) => {
     }
 
     const messengers = await Messenger.findAll({
-        where: {
-          [Op.or]: [{ senderId: userId }, { receiverId: userId }],
+      where: {
+        [Op.or]: [{ senderId: userId }, { receiverId: userId }],
+      },
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: User,
+          as: "sender", // Chắc chắn trùng với alias trong model
+          attributes: ["id", "username", "avatar"],
         },
-        order: [["createdAt", "DESC"]],
-        include: [
-          {
-            model: User,
-            as: "sender", // Chắc chắn trùng với alias trong model
-            attributes: ["id", "username", "avatar"],
-          },
-          {
-            model: User,
-            as: "receiver", // Chắc chắn trùng với alias trong model
-            attributes: ["id", "username", "avatar"],
-          },
-        ],
-      });
-      
+        {
+          model: User,
+          as: "receiver", // Chắc chắn trùng với alias trong model
+          attributes: ["id", "username", "avatar"],
+        },
+      ],
+    });
 
     if (messengers.length === 0) {
       return {
@@ -88,31 +87,44 @@ const getMessenger = async (userId) => {
     const uniqueConversations = new Map();
 
     for (const msg of messengers) {
-        if (!msg.sender || !msg.receiver) {
-          console.error(`Lỗi: Tin nhắn ID ${msg.id} không có sender hoặc receiver.`);
-          continue; // Bỏ qua tin nhắn lỗi
+      if (!msg.sender || !msg.receiver) {
+        console.error(
+          `Lỗi: Tin nhắn ID ${msg.id} không có sender hoặc receiver.`
+        );
+        continue; // Bỏ qua tin nhắn lỗi
+      }
+
+      // Tạo một khóa duy nhất bằng cách sắp xếp userId
+      const conversationKey = [msg.senderId, msg.receiverId].sort().join("_");
+
+      // Nếu cuộc trò chuyện chưa có trong danh sách, thêm vào
+      if (!uniqueConversations.has(conversationKey)) {
+        uniqueConversations.set(conversationKey, {
+          sender: {
+            id: msg.sender.id,
+            username: msg.sender.username,
+            avatar: msg.sender.avatar,
+          },
+          receiver: {
+            id: msg.receiver.id,
+            username: msg.receiver.username,
+            avatar: msg.receiver.avatar,
+          },
+          lastMessage: msg.content,
+          lastMessageTime: msg.createdAt,
+        });
+      } else {
+        // Nếu đã tồn tại, cập nhật tin nhắn mới nhất
+        const existingConversation = uniqueConversations.get(conversationKey);
+        if (
+          new Date(msg.createdAt) >
+          new Date(existingConversation.lastMessageTime)
+        ) {
+          existingConversation.lastMessage = msg.content;
+          existingConversation.lastMessageTime = msg.createdAt;
         }
-      
-        const conversationWith =
-          msg.senderId === userId ? msg.receiverId : msg.senderId;
-      
-        if (!uniqueConversations.has(conversationWith)) {
-          uniqueConversations.set(conversationWith, {
-            sender: {
-              id: msg.sender.id, // Đảm bảo msg.sender không undefined
-              username: msg.sender.username,
-              avatar: msg.sender.avatar,
-            },
-            receiver: {
-              id: msg.receiver.id, // Đảm bảo msg.receiver không undefined
-              username: msg.receiver.username,
-              avatar: msg.receiver.avatar,
-            },
-            lastMessage: msg.content,
-            lastMessageTime: msg.createdAt,
-          });
-        }
-      }      
+      }
+    }
 
     // Chuyển danh sách thành mảng và sắp xếp theo lastMessageTime mới nhất lên trên
     const sortedConversations = Array.from(uniqueConversations.values()).sort(

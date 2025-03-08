@@ -8,7 +8,10 @@ const onlineUsers = new Map(); // Lưu user đang online
 const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: ["https://linkup-server-ir0g.onrender.com", "https://your-frontend-domain.com"], 
+      origin: [
+        "https://linkup-server-ir0g.onrender.com",
+        "https://your-frontend-domain.com",
+      ],
       methods: ["GET", "POST"],
       allowedHeaders: ["Content-Type", "Authorization"],
     },
@@ -57,17 +60,17 @@ const initSocket = (server) => {
       });
 
       const receiverSocketId = onlineUsers.get(receiverId);
+
+      // Chỉ gửi tin nhắn đến người nhận, KHÔNG gửi lại cho người gửi
       if (receiverSocketId) {
-        console.log("🛑 Gửi tin nhắn đến người nhận:", receiverSocketId);
+        console.log("📩 Gửi tin nhắn đến người nhận:", receiverSocketId);
         io.to(receiverSocketId).emit("receiveMessage", fullMessage);
-      } else {
-        console.log("🛑 Người nhận không online");
       }
     });
 
     // Xử lý khi user disconnect
     socket.on("disconnect", () => {
-        console.log("❌ WebSocket client disconnected:", socket.id);
+      console.log("❌ WebSocket client disconnected:", socket.id);
     });
   });
 
