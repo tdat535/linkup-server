@@ -41,10 +41,10 @@ const createMediaPost = async (mediaPostData) => {
     }
 
     // Kiểm tra kết quả trước khi tạo bài viết
-    if (!imageUrl) {
-      console.error("Image URL is missing.");
-      throw new Error("Image URL is missing.");
-    }
+    // if (!imageUrl) {
+    //   console.error("Image URL is missing.");
+    //   throw new Error("Image URL is missing.");
+    // }
 
     console.log("Creating media post with image URL:", imageUrl);
 
