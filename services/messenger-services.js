@@ -190,12 +190,7 @@ const getMessengerDetail = async (userId, otherUserId) => {
           model: User,
           as: "sender",
           attributes: ["id", "username", "avatar"],
-        },
-        {
-          model: User,
-          as: "receiver",
-          attributes: ["id", "username", "avatar"],
-        },
+        },           
       ],
     });
 

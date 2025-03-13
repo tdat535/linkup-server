@@ -309,40 +309,6 @@
         ]
       }
     },
-    "/api/follow/acceptedFollow": {
-      "post": {
-        "summary": "Chấp nhận lượt theo dõi",
-        "tags": ["Follow"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "followerId": {
-                    "type": "integer",
-                    "description": "ID của người dùng gửi yều cầu theo dõi"
-                  },
-                  "followingId": {
-                    "type": "integer",
-                    "description": "ID của bản thân mình"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Chấp nhận yêu cầu theo dõi" },
-          "400": { "description": "Lỗi đầu vào không hợp lệ" }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ]
-      }
-    },
     "/api/follow/getFollow": {
       "get": {
         "summary": "Lấy danh sách theo dõi",

@@ -2,86 +2,34 @@ const Follow = require("../models/follow");
 const User = require("../models/user");
 
 const createFollow = async (followData) => {
-  try {
-    const { followerId, followingId } = followData;
+  const { followerId, followingId } = followData;
 
-    // Kiểm tra ID của follower và following có tồn tại không
+  try {
+    if (followerId === followingId) {
+      return { error: "Không thể tự follow chính mình.", status: 400 };
+    }
+
+    // Kiểm tra người dùng tồn tại
     const follower = await User.findByPk(followerId);
     const following = await User.findByPk(followingId);
     if (!follower || !following) {
       return { error: "Người dùng không tồn tại.", status: 404 };
     }
 
-    // Kiểm tra xem đã follow chưa và trạng thái có phải "pending"
+    // Kiểm tra đã follow chưa
     const existingFollow = await Follow.findOne({
       where: { followerId, followingId },
     });
-    if (existingFollow && existingFollow.status === "pending") {
-      return {
-        error: "Đã gửi yêu cầu theo dõi, đang chờ phản hồi.",
-        status: 400,
-      };
-    } else if (existingFollow && existingFollow.status === "accepted") {
-      return { error: "Người dùng đã follow trước đó.", status: 400 };
+    if (existingFollow) {
+      return { error: "Bạn đã follow người này.", status: 400 };
     }
 
-    // Tạo follow mới với trạng thái "pending"
-    const newFollow = await Follow.create({
-      followerId,
-      followingId,
-      status: "pending",
-    });
+    // Tạo follow mới
+    const newFollow = await Follow.create({ followerId, followingId });
 
-    return {
-      id: newFollow.id,
-      followerId: newFollow.followerId,
-      followingId: newFollow.followingId,
-      followedAt: newFollow.followedAt,
-      status: newFollow.status,
-    };
+    return { message: "Follow thành công!", followId: newFollow.id };
   } catch (error) {
     throw new Error("Lỗi khi tạo follow: " + error.message);
-  }
-};
-
-const acceptFollow = async (followerId, followingId) => {
-  try {
-    // Tìm kiếm follow với trạng thái "pending"
-    const follow = await Follow.findOne({
-      where: { followerId, followingId, status: "pending" },
-    });
-
-    if (!follow) {
-      return {
-        error: "Không có yêu cầu theo dõi nào cần chấp nhận.",
-        status: 404,
-      };
-    }
-
-    // Cập nhật trạng thái follow thành "accepted"
-    follow.status = "accepted";
-    await follow.save();
-
-    // Kiểm tra xem followingId đã follow lại followerId chưa
-    const reverseFollow = await Follow.findOne({
-      where: { followerId: followingId, followingId: followerId },
-    });
-
-    // Nếu chưa có follow ngược, tạo follow mới với trạng thái "accepted"
-    if (!reverseFollow) {
-      await Follow.create({
-        followerId: followingId,
-        followingId: followerId,
-        status: "accepted",
-      });
-    }
-
-    return {
-      message: "Yêu cầu theo dõi đã được chấp nhận, cả hai đều follow nhau.",
-      status: "accepted",
-    };
-  } catch (error) {
-    throw new Error("Lỗi khi chấp nhận follow: " + error.message);
   }
 };
 
@@ -92,13 +40,13 @@ const getFollow = async (userId) => {
 
     // Lấy danh sách người mà user đang follow
     const followingList = await Follow.findAll({
-      where: { followerId: userId, status: 'accepted' },
+      where: { followerId: userId },
       include: [{ model: User, as: "FollowingUser", attributes: ["id", "username", "avatar"] }]
     });
 
     // Lấy danh sách người đang follow user
     const followersList = await Follow.findAll({
-      where: { followingId: userId, status: 'accepted' },
+      where: { followingId: userId },
       include: [{ model: User, as: "Follower", attributes: ["id", "username", "avatar"] }]
     });
 
@@ -113,4 +61,4 @@ const getFollow = async (userId) => {
   }
 };
 
-module.exports = { createFollow, getFollow, acceptFollow };
+module.exports = { createFollow, getFollow };
