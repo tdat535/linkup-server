@@ -304,7 +304,7 @@ const userProfile = async (userId, currentUserId) => {
         isSuccess: true,
         status: 200,
         message: "Hiển thị trang cá nhân của bạn",
-        userId: user.id,
+        UserId: user.id,
         username: user.username,
         email: user.email,
         realname: user.realname,
