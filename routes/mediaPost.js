@@ -6,7 +6,6 @@ const {
 } = require("../services/mediaPost-services");
 const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
 const router = express.Router();
-const path = require("path");
 
 router.get("/getPost", authenticateToken, async (req, res) => {
   try {
@@ -54,7 +53,7 @@ router.get("/getAll", async (req, res) => {
   }
 });
 
-router.post("/createPost", authenticateToken, upload.single("image"), async (req, res) => {
+router.post("/createPost", authenticateToken, async (req, res) => {
     console.log("req.file:", req.file);
     console.log("req.body:", req.body);
 
