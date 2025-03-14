@@ -12,6 +12,15 @@ cloudinary.config({
 
 const createMediaPost = async (mediaPostData) => {
   try {
+
+    if (mediaPostData.content === null || mediaPostData.content === undefined || mediaPostData.content.trim() === "") {
+      return {
+        isSuccess: false,
+        status: 400,
+        error: "Thiếu thông tin bài viết.",
+      };
+    }
+
     let imageUrl = null;
 
     // Kiểm tra xem ảnh có tồn tại không
@@ -58,6 +67,9 @@ const createMediaPost = async (mediaPostData) => {
     await newMediaPost.save();
 
     return {
+      isSuccess: true,
+      status: 200,
+      message: "Tạo bài viết thành công",
       id: newMediaPost.id,
       content: newMediaPost.content,
       image: newMediaPost.image,
@@ -100,7 +112,12 @@ const getMediaPosts = async (userId) => {
       order: [["createdAt", "DESC"]], // Sắp xếp theo thời gian tạo (mới nhất ở trên)
     });
 
-    return mediaPosts;
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Lấy danh sách bài viết thành công",
+      data: mediaPosts,
+    };
   } catch (error) {
     throw new Error("Error getting media posts: " + error.message);
   }
@@ -110,6 +127,9 @@ const getAll = async () => {
   try {
     const list = await MediaPost.findAll();
     return {
+      isSuccess: true,
+      status: 200,
+      message: "Lấy danh sách tất cả bài viết thành công",
       data: list,
     };
   } catch (error) {

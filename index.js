@@ -42,7 +42,7 @@ app.use('/api/comment', require('./routes/comment'));
 app.use('/api/like', require('./routes/like'));
 app.use('/api/messenger', require('./routes/messenger'));
 app.use('/api/follow', require('./routes/follow'));
-app.use("/upload", require("./routes/upload"));
+//app.use("/upload", require("./routes/upload"));
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + "/test.html")

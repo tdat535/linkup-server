@@ -24,21 +24,24 @@ const upload = multer({ storage, fileFilter });
 
 router.get("/getPost", authenticateToken, async (req, res) => {
   try {
-    const userId = req.query.userId;
-    if (!userId) {
-      return res.status(400).send({
-        isSuccess: false,
-        message: "Missing userId parameter",
-      });
-    }
+    //const userId = req.query.userId;
+    const userId = req.user.id; // Lấy userId từ JWT
+    // if (!userId) {
+    //   return res.status(400).send({
+    //     isSuccess: false,
+    //     message: "Missing userId parameter",
+    //   });
+    // }
 
     const mediaPosts = await getMediaPosts(userId); // Lấy bài viết từ database
-    res.status(200).send({
-      isSuccess: true,
-      status: 200,
-      message: "Lấy danh sách bài viết thành công",
-      data: mediaPosts,
-    });
+    if (!mediaPosts.isSuccess) {
+      return res.status(mediaPosts.status).send({
+        isSuccess: false,
+        status: mediaPosts.status,
+        message: mediaPosts.error || "Có lỗi xảy ra.",
+      });
+    }
+    res.status(200).send(mediaPosts);
   } catch (error) {
     console.error(error);
     res.status(500).send({
@@ -51,53 +54,47 @@ router.get("/getPost", authenticateToken, async (req, res) => {
 router.get("/getAll", async (req, res) => {
   try {
     const mediaPosts = await getAll();
-    res.status(200).send({
-      isSuccess: true,
-      status: 200,
-      message: "Lấy danh sách bài viết thành công",
-      data: mediaPosts,
-    });
+    if (!mediaPosts.isSuccess) {
+      return res.status(mediaPosts.status).send({
+        isSuccess: false,
+        status: mediaPosts.status,
+        message: mediaPosts.error || "Có lỗi xảy ra.",
+      });
+    }
+    res.status(200).send(mediaPosts);
   } catch (error) {
     res.status(400).send("Something went wrong!");
     console.log(error);
   }
 });
 
-router.post(
-  "/createPost",
-  authenticateToken,
-  upload.single("image"),
-  async (req, res) => {
+router.post("/createPost", authenticateToken, upload.single("image"), async (req, res) => {
     console.log("req.file:", req.file);
     console.log("req.body:", req.body);
 
     try {
-      const { content, userId } = req.body;
-
-      if (!content || !userId) {
-        return res.status(400).json({
-          isSuccess: false,
-          message: "Thiếu thông tin bài viết hoặc người dùng.",
-        });
-      }
-
       let imagePath = null;
       if (req.file) {
         imagePath = req.file; // Đảm bảo Multer file được gửi đúng
       }
 
-      const mediaPost = await createMediaPost({
-        content,
-        userId,
-        image: imagePath,
-      });
+      const mediaPostData = {
+        content: req.body.content,
+        userId: req.user.id,
+        image : imagePath
+      }
 
-      res.status(200).json({
-        isSuccess: true,
-        status: 200,
-        message: "Tạo bài viết thành công",
-        data: mediaPost,
-      });
+      const mediaPost = await createMediaPost(mediaPostData);
+
+      if (!mediaPost.isSuccess) {
+        return res.status(mediaPost.status).send({
+          isSuccess: false,
+          status: mediaPost.status,
+          message: mediaPost.error || "Có lỗi xảy ra.",
+        });
+      }
+
+      res.status(200).send(mediaPost);
     } catch (error) {
       console.error("Error creating media post:", error);
       res.status(400).json({

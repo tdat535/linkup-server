@@ -6,7 +6,7 @@ const router = express.Router();
 // Lấy danh sách các cuộc trò chuyện của user
 router.get("/getMessenger", authenticateToken, async (req, res) => {
     try {
-        const userId = req.query.userId;
+        const userId = req.user.id;
         const messengers = await getMessenger(userId);
         
         // Kiểm tra nếu không có lỗi và trả về dữ liệu
@@ -17,7 +17,6 @@ router.get("/getMessenger", authenticateToken, async (req, res) => {
                 message: messengers.error || "Có lỗi xảy ra."
             });
         }
-
         res.status(200).send(messengers);
     } catch (error) {
         console.error(error);
@@ -28,7 +27,6 @@ router.get("/getMessenger", authenticateToken, async (req, res) => {
         });
     }
 });
-
 
 // Gửi tin nhắn mới
 router.post("/createMessenger", authenticateToken, async (req, res) => {
@@ -42,20 +40,14 @@ router.post("/createMessenger", authenticateToken, async (req, res) => {
 
         const messenger = await createMessenger(messengerData);
 
-        if (messenger.error) {
+        if (!messenger.isSuccess) {
             return res.status(messenger.status).send({
-                isSuccess: false,
-                status: messenger.status,
-                message: messenger.error,
+              isSuccess: false,
+              status: messenger.status,
+              message: messenger.error || "Có lỗi xảy ra.",
             });
-        }
-
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: "Tạo tin nhắn thành công",
-            data: messenger,
-        });
+          }
+          res.status(200).send(messenger);
     } catch (error) {
         console.error(error);
         res.status(500).send({
@@ -69,7 +61,7 @@ router.post("/createMessenger", authenticateToken, async (req, res) => {
 // Lấy chi tiết tin nhắn giữa user và người khác
 router.get("/getMessengerDetail", authenticateToken, async (req, res) => {
     try {
-        const userId = req.query.userId;
+        const userId = req.user.id;
         const otherUserId = req.query.otherUserId;
         const messages = await getMessengerDetail(userId, otherUserId);
 

@@ -6,20 +6,19 @@ const router = express.Router();
 
 router.post("/createFollow", authenticateToken, async (req, res) => {  
     try {
-        const Follow = await createFollow(req.body);
-        if (Follow.error){
-            return res.status(Follow.status).send({
-                isSuccess:false,
-                status: Follow.status,
-                message: Follow.error
-            })
+        const followData = {
+            followerId: req.user.id,
+            followingId: req.body.followingId
         }
-        res.status(200).send({
-            isSuccess:true,
-            status: 200,
-            message: "Theo dõi thành công",
-            data: Follow
-        });
+        const Follow = await createFollow(followData);
+        if (!Follow.isSuccess) {
+            return res.status(Follow.status).send({
+              isSuccess: false,
+              status: Follow.status,
+              message: Follow.error || "Có lỗi xảy ra.",
+            });
+          }
+          res.status(200).send(Follow);
     } catch (error) {
         res.status(400).send('Something went wrong!');
         console.log(error);    
@@ -28,14 +27,16 @@ router.post("/createFollow", authenticateToken, async (req, res) => {
 
 router.get("/getFollow", authenticateToken, async (req, res) => {  
     try {
-        const Follow = await getFollow(req.query.userId);
-
-        res.status(200).send({
-            isSuccess:true,
-            status: 200,
-            message: "Tạo bài viết thành công",
-            data: Follow
-        });
+        const userId = req.user.id;
+        const Follow = await getFollow(userId);
+        if (!Follow.isSuccess) {
+            return res.status(Follow.status).send({
+              isSuccess: false,
+              status: Follow.status,
+              message: Follow.error || "Có lỗi xảy ra.",
+            });
+          }
+          res.status(200).send(Follow);
     } catch (error) {
         res.status(400).send('Something went wrong!');
         console.log(error);    
@@ -43,31 +44,33 @@ router.get("/getFollow", authenticateToken, async (req, res) => {
 });
 
 // Route để chấp nhận yêu cầu theo dõi
-router.post("/acceptFollow", authenticateToken, async (req, res) => {  
-    try {
-        const { followerId, followingId } = req.body;
+// router.post("/acceptFollow", authenticateToken, async (req, res) => {  
+//     try {
+//         const followData = {ê
+//             followerId: req.user.id,
+//             followingId: req.body.followingId
+//         }
+//         const FollowResponse = await acceptFollow(followData);
 
-        const FollowResponse = await acceptFollow(followerId, followingId);
+//         if (FollowResponse.error) {
+//             return res.status(FollowResponse.status).send({
+//                 isSuccess: false,
+//                 status: FollowResponse.status,
+//                 message: FollowResponse.error
+//             });
+//         }
 
-        if (FollowResponse.error) {
-            return res.status(FollowResponse.status).send({
-                isSuccess: false,
-                status: FollowResponse.status,
-                message: FollowResponse.error
-            });
-        }
-
-        res.status(200).send({
-            isSuccess: true,
-            status: 200,
-            message: FollowResponse.message,
-            data: FollowResponse,
-        });
-    } catch (error) {
-        res.status(400).send('Something went wrong!');
-        console.log(error);    
-    }
-});
+//         res.status(200).send({
+//             isSuccess: true,
+//             status: 200,
+//             message: FollowResponse.message,
+//             data: FollowResponse,
+//         });
+//     } catch (error) {
+//         res.status(400).send('Something went wrong!');
+//         console.log(error);    
+//     }
+// });
 
 
 module.exports = router;

@@ -121,8 +121,8 @@ router.post("/search", authenticateToken, async (req, res) => {
 
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
-    const userId = req.query.userId; // ID của người cần xem
-    const currentUserId = req.query.currentUserId; // ID của người đang đăng nhập
+    const userId = Number(req.query.userId); // ID của người cần xem
+    const currentUserId = req.user.id; // Lấy từ JWT (đã là number)
     const result = await userProfile(userId, currentUserId);
 
     if (!result.isSuccess) {
