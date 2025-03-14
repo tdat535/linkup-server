@@ -97,18 +97,15 @@ const getMessenger = async (userId) => {
       // Tạo một khóa duy nhất bằng cách sắp xếp userId
       const conversationKey = [msg.senderId, msg.receiverId].sort().join("_");
 
-      // Nếu cuộc trò chuyện chưa có trong danh sách, thêm vào
+      // Xác định đối tượng đối thoại (người còn lại)
+      const otherUser = msg.sender.id === userId ? msg.receiver : msg.sender;
+
       if (!uniqueConversations.has(conversationKey)) {
         uniqueConversations.set(conversationKey, {
-          sender: {
-            id: msg.sender.id,
-            username: msg.sender.username,
-            avatar: msg.sender.avatar,
-          },
-          receiver: {
-            id: msg.receiver.id,
-            username: msg.receiver.username,
-            avatar: msg.receiver.avatar,
+          user: {
+            id: otherUser.id,
+            username: otherUser.username,
+            avatar: otherUser.avatar,
           },
           lastMessage: msg.content,
           lastMessageTime: msg.createdAt,
@@ -190,7 +187,7 @@ const getMessengerDetail = async (userId, otherUserId) => {
           model: User,
           as: "sender",
           attributes: ["id", "username", "avatar"],
-        },           
+        },
       ],
     });
 
