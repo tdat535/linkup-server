@@ -20,14 +20,6 @@ const server = http.createServer(app); // Tạo server HTTP
 app.use(cors()); // Đảm bảo cấu hình này được đặt đúng
 app.use(express.json());
 initSocket(server); // Khởi tạo socket.io và liên kết với server
-
-// Kiểm tra và tạo thư mục uploads nếu chưa tồn tại
-// const uploadPath = path.join(__dirname, 'uploads');
-// if (!fs.existsSync(uploadPath)) {
-//   fs.mkdirSync(uploadPath, { recursive: true });
-// }
-// app.use('/uploads', express.static(uploadPath));
-
 // Import models
 require('./models/user');
 require('./models/mediaPost');
@@ -42,7 +34,6 @@ app.use('/api/comment', require('./routes/comment'));
 app.use('/api/like', require('./routes/like'));
 app.use('/api/messenger', require('./routes/messenger'));
 app.use('/api/follow', require('./routes/follow'));
-//app.use("/upload", require("./routes/upload"));
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + "/test.html")
