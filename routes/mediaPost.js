@@ -6,21 +6,7 @@ const {
 } = require("../services/mediaPost-services");
 const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
 const router = express.Router();
-const multer = require("multer");
 const path = require("path");
-
-// Cấu hình Multer
-const storage = multer.memoryStorage(); // Lưu trữ ảnh trong bộ nhớ thay vì lưu trên đĩa
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"]; // Chỉ cho phép JPG, PNG, WEBP
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Chỉ hỗ trợ các định dạng: .jpg, .png, .webp!"), false);
-  }
-};
-
-const upload = multer({ storage, fileFilter });
 
 router.get("/getPost", authenticateToken, async (req, res) => {
   try {
@@ -75,7 +61,7 @@ router.post("/createPost", authenticateToken, upload.single("image"), async (req
     try {
       let imagePath = null;
       if (req.file) {
-        imagePath = req.file; // Đảm bảo Multer file được gửi đúng
+        imagePath = req.file; 
       }
 
       const mediaPostData = {
