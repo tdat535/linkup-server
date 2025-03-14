@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user"); // Assuming you have a User model
 const RefreshToken = require("../models/refreshToken");
 const Follow = require("../models/follow");
+const MediaPost = require("../models/mediaPost")
 const { Op } = require("sequelize");
 
 const { getFollow } = require("./follow-services");
@@ -274,53 +275,36 @@ const useSearch = async (userData) => {
   }
 };
 
+const getUserPosts = async (userId) => {
+  return await MediaPost.findAll({
+    where: { userId },
+    include: [
+      {
+        model: User,
+        attributes: ["username", "avatar"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+};
+
 const userProfile = async (userId, currentUserId) => {
-    try {
-      const user = await User.findByPk(userId);
-  
-      if (!user) {
-        return { error: "Không tìm thấy người dùng", status: 404 };
-      }
-  
-      // Nếu userId == currentUserId, không cần lấy trạng thái follow
-      if (userId === currentUserId) {
-        return {
-          isSuccess: true,
-          status: 200,
-          message: "Hiển thị trang cá nhân của bạn",
-          UserId: user.id,
-          username: user.username,
-          email: user.email,
-          realname: user.realname,
-          phonenumber: user.phonenumber,
-          avatar: user.avatar,
-          following: (await getFollow(userId)).following,
-          followers: (await getFollow(userId)).followers,
-        };
-      }
-  
-      // Kiểm tra trạng thái follow giữa hai người
-      let followStatus = "Theo dõi"; // Mặc định chưa follow ai cả
-  
-      const isFollowing = await Follow.findOne({
-        where: { followerId: currentUserId, followingId: userId },
-      });
-  
-      const isFollowedBy = await Follow.findOne({
-        where: { followerId: userId, followingId: currentUserId },
-      });
-  
-      if (isFollowing) {
-        followStatus = "Đang theo dõi";
-      } else if (isFollowedBy) {
-        followStatus = "Theo dõi lại";
-      }
-  
+  try {
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return { error: "Không tìm thấy người dùng", status: 404 };
+    }
+
+    // Lấy danh sách bài viết của người dùng
+    const userPosts = await getUserPosts(userId);
+
+    if (userId === currentUserId) {
       return {
         isSuccess: true,
         status: 200,
-        message: "Hiển thị trang cá nhân của người dùng",
-        UserId: user.id,
+        message: "Hiển thị trang cá nhân của bạn",
+        userId: user.id,
         username: user.username,
         email: user.email,
         realname: user.realname,
@@ -328,14 +312,46 @@ const userProfile = async (userId, currentUserId) => {
         avatar: user.avatar,
         following: (await getFollow(userId)).following,
         followers: (await getFollow(userId)).followers,
-        followStatus,
+        posts: userPosts, // Thêm danh sách bài viết vào đây
       };
-    } catch (error) {
-      console.error("Profile Error:", error);
-      return { error: "Lỗi xảy ra khi lấy thông tin người dùng", status: 500 };
     }
-  };
-  
+
+    let followStatus = "Theo dõi";
+
+    const isFollowing = await Follow.findOne({
+      where: { followerId: currentUserId, followingId: userId },
+    });
+
+    const isFollowedBy = await Follow.findOne({
+      where: { followerId: userId, followingId: currentUserId },
+    });
+
+    if (isFollowing) {
+      followStatus = "Đang theo dõi";
+    } else if (isFollowedBy) {
+      followStatus = "Theo dõi lại";
+    }
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Hiển thị trang cá nhân của người dùng",
+      UserId: user.id,
+      username: user.username,
+      email: user.email,
+      realname: user.realname,
+      phonenumber: user.phonenumber,
+      avatar: user.avatar,
+      following: (await getFollow(userId)).following,
+      followers: (await getFollow(userId)).followers,
+      followStatus,
+      posts: userPosts, // Thêm danh sách bài viết vào đây
+    };
+  } catch (error) {
+    console.error("Profile Error:", error);
+    return { error: "Lỗi xảy ra khi lấy thông tin người dùng", status: 500 };
+  }
+};
 
 module.exports = {
   register,
