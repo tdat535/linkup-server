@@ -153,12 +153,6 @@
             "in": "query",
             "schema": { "type": "integer" },
             "description": "ID của người dùng cần hiện thị trang cá nhận"
-          },
-          {
-            "name": "currentUserId",
-            "in": "query",
-            "schema": { "type": "integer" },
-            "description": "ID của người dùng hiện tại"
           }
         ],
         "responses": {
