@@ -64,6 +64,7 @@ const register = async (userData) => {
       email: userData.email,
       phonenumber: userData.phonenumber,
       password: hashedPassword,
+      realname: "test",
       avatar:
         "https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg",
     });
@@ -256,7 +257,6 @@ const useSearch = async (userData) => {
         "email",
         "phonenumber",
         "avatar",
-        "realname",
       ],
     });
 
@@ -307,7 +307,6 @@ const userProfile = async (userId, currentUserId) => {
         UserId: user.id,
         username: user.username,
         email: user.email,
-        realname: user.realname,
         phonenumber: user.phonenumber,
         avatar: user.avatar,
         following: (await getFollow(userId)).following,
@@ -339,7 +338,6 @@ const userProfile = async (userId, currentUserId) => {
       UserId: user.id,
       username: user.username,
       email: user.email,
-      realname: user.realname,
       phonenumber: user.phonenumber,
       avatar: user.avatar,
       following: (await getFollow(userId)).following,

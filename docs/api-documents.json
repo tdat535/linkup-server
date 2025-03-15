@@ -173,14 +173,6 @@
       "get": {
         "summary": "Lấy danh sách bài viết",
         "tags": ["Media"],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "schema": { "type": "integer" },
-            "description": "ID của người dùng hiện tại"
-          }
-        ],
         "responses": {
           "200": { "description": "Lấy danh sách bài viết thành công" },
           "400": { "description": "Lỗi không xác định" }
@@ -203,8 +195,7 @@
                 "type": "object",
                 "properties": {
                   "content": { "type": "string" },
-                  "image": { "type": "string" },
-                  "userId": { "type": "int" }
+                  "image": { "type": "string" }
                 }
               }
             }
@@ -285,10 +276,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "followerId": {
-                    "type": "integer",
-                    "description": "ID của bản thân mình"
-                  },
                   "followingId": {
                     "type": "integer",
                     "description": "ID của người mà mình muốn theo dõi"
@@ -313,16 +300,6 @@
       "get": {
         "summary": "Lấy danh sách theo dõi",
         "tags": ["Follow"],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "schema": {
-              "type": "int"
-            },
-            "description": "ID của người dùng"
-          }
-        ],
         "responses": {
           "200": { "description": "Lấy danh sách theo dõi thành công" },
           "400": { "description": "Lỗi không xác định" }
@@ -338,14 +315,6 @@
       "get": {
         "summary": "Lấy danh sách cuộc trò chuyện",
         "tags": ["Messenger"],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "schema": { "type": "integer" },
-            "description": "ID của người dùng cần lấy danh sách tin nhắn"
-          }
-        ],
         "responses": {
           "200": { "description": "Lấy danh sách cuộc trò chuyện thành công" },
           "400": { "description": "Thiếu thông tin userId" },
@@ -396,12 +365,6 @@
         "summary": "Lấy tin nhắn giữa hai người",
         "tags": ["Messenger"],
         "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "schema": { "type": "integer" },
-            "description": "ID của bản thân mình"
-          },
           {
             "name": "otherUserId",
             "in": "query",
@@ -454,7 +417,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "userId": { "type": "int" },
                   "postId": { "type": "int" }
                 }
               }

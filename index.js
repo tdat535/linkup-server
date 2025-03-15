@@ -27,18 +27,15 @@ require('./models/comment');
 require('./models/like');
 require('./models/messenger');
 
-// Routes
 app.use('/api/auth', require('./routes/user'));
 app.use('/api/media', require('./routes/mediaPost'));
 app.use('/api/comment', require('./routes/comment'));
 app.use('/api/like', require('./routes/like'));
-app.use('/api/messenger', require('./routes/messenger'));
-app.use('/api/follow', require('./routes/follow'));
+app.use('/api/texting', require('./routes/messenger'));
+app.use('/api/follow',require('./routes/follow'));
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + "/test.html")
-})
-
+app.use(cors());
+// Đọc file API document
 // API Documentation (Redoc)
 const redoc = require('redoc-express');
 app.get('/docs/api-documents.json', (req, res) => {
@@ -54,15 +51,16 @@ app.get('/docs', redoc({
   specUrl: '/docs/api-documents.json',
 }));
 
+
 // Kết nối DB và chạy server
 connectDB().then(() => {
-  sequelize.sync() // Loại bỏ `alter: true` nếu không cần thiết
+  sequelize.sync({ alter: true })
     .then(() => console.log('✅ Đã đồng bộ database'))
     .catch(err => console.error('❌ Có lỗi khi đồng bộ database:', err));
 
   const PORT = process.env.PORT || 3000;
-  server.listen(PORT, () => { // Sử dụng server thay vì app.listen
+  app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
-    console.log(`📄 API Docs: http://localhost:${PORT}/docs`);
+    
   });
 });
