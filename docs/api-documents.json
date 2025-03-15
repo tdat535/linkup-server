@@ -140,7 +140,12 @@
           "400": {
             "description": "Thông tin người dùng không đúng hoặc không tồn tại"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/auth/profile": {
@@ -156,11 +161,16 @@
           }
         ],
         "responses": {
-          "200": { "description": "Tìm kím thành công" },
+          "200": { "description": "Hiện thị trang cá nhân của người dùng thành công" },
           "400": {
             "description": "Thông tin người dùng không đúng hoặc không tồn tại"
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/media/getPost": {
