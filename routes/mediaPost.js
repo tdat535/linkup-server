@@ -52,9 +52,13 @@ router.get("/getAll", async (req, res) => {
     console.log(error);
   }
 });
+const multer = require('multer');
 
-router.post("/createPost", authenticateToken, async (req, res) => {
-    console.log("req.file:", req.file);
+const storage = multer.memoryStorage(); // Lưu file vào bộ nhớ để upload lên Cloudinary
+const upload = multer({ storage: storage });
+
+router.post("/createPost", authenticateToken, upload.single("image"), async (req, res) => {
+  console.log("req.file:", req.file);
     console.log("req.body:", req.body);
 
     try {
@@ -87,7 +91,6 @@ router.post("/createPost", authenticateToken, async (req, res) => {
         error: "Đã có lỗi xảy ra khi tạo bài viết. Chi tiết: " + error.message,
       });
     }
-  }
-);
+  });
 
 module.exports = router;
