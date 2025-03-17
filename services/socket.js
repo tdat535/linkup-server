@@ -10,7 +10,7 @@ const initSocket = (server) => {
     cors: {
       origin: [
         "https://linkup-server-ir0g.onrender.com",
-        "https://your-frontend-domain.com",
+        "http://localhost:3000",
       ],
       methods: ["GET", "POST"],
       allowedHeaders: ["Content-Type", "Authorization"],

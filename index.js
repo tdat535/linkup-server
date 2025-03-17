@@ -34,7 +34,10 @@ app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
 app.use('/api/follow',require('./routes/follow'));
 
-app.use(cors());
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'test.html')); // Dùng `path.join()`
+});
+
 // Đọc file API document
 // API Documentation (Redoc)
 const redoc = require('redoc-express');
@@ -53,14 +56,14 @@ app.get('/docs', redoc({
 
 
 // Kết nối DB và chạy server
+// Kết nối DB và chạy server
 connectDB().then(() => {
   sequelize.sync({ alter: true })
     .then(() => console.log('✅ Đã đồng bộ database'))
     .catch(err => console.error('❌ Có lỗi khi đồng bộ database:', err));
 
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {  // Dùng `server.listen()` thay vì `app.listen()`
     console.log(`🚀 Server is running on port ${PORT}`);
-    
   });
 });
