@@ -50,6 +50,7 @@ app.get('/docs/api-documents.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.sendFile(filePath);
 });
+
 app.get('/docs', redoc({
   title: 'LinkUp API Docs',
   specUrl: '/docs/api-documents.json',
