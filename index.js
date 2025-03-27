@@ -66,7 +66,7 @@ connectDB().then(() => {
     .then(() => console.log("✅ Đã đồng bộ database"))
     .catch((err) => console.error("❌ Có lỗi khi đồng bộ database:", err));
 
-  const PORT = process.env.PORT || 10000; // Render tự cấp port
+  const PORT = 10000; // Render tự cấp port
   server.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
   });
