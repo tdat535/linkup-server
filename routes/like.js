@@ -20,7 +20,11 @@ router.get("/getLikes", authenticateToken, async (req, res) => {
 
 router.post("/createLike", authenticateToken, async (req, res) => {
     try {
-        const like = await createLike(req.body);
+        const likeData = {
+            userId: req.user.id,
+            postId: req.body.postId
+        }
+        const like = await createLike(likeData);
         res.status(200).send({
             isSuccess:true,
             status: 200,
