@@ -2,7 +2,7 @@ const express = require("express");
 const {
   getMediaPosts,
   createMediaPost,
-  getAll,
+  getAllMediaPost,
 } = require("../services/mediaPost-services");
 const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
 const router = express.Router();
@@ -36,9 +36,17 @@ router.get("/getPost", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/getAll", async (req, res) => {
+router.get("/getAllMediaPost", authenticateToken, async (req, res) => {
+  console.log("User Info:", req.user); // Kiểm tra dữ liệu từ JWT
   try {
-    const mediaPosts = await getAll();
+    if (req.user.type !== 'admin') {
+      return res.status(403).send({
+        isSuccess: false,
+        message: "Bạn không có quyền truy cập.",
+      });
+    }
+
+    const mediaPosts = await getAllMediaPost();
     if (!mediaPosts.isSuccess) {
       return res.status(mediaPosts.status).send({
         isSuccess: false,
@@ -52,26 +60,31 @@ router.get("/getAll", async (req, res) => {
     console.log(error);
   }
 });
-const multer = require('multer');
+
+const multer = require("multer");
 
 const storage = multer.memoryStorage(); // Lưu file vào bộ nhớ để upload lên Cloudinary
 const upload = multer({ storage: storage });
 
-router.post("/createPost", authenticateToken, upload.single("image"), async (req, res) => {
-  console.log("req.file:", req.file);
+router.post(
+  "/createPost",
+  authenticateToken,
+  upload.single("image"),
+  async (req, res) => {
+    console.log("req.file:", req.file);
     console.log("req.body:", req.body);
 
     try {
       let imagePath = null;
       if (req.file) {
-        imagePath = req.file; 
+        imagePath = req.file;
       }
 
       const mediaPostData = {
         content: req.body.content,
         userId: req.user.id,
-        image : imagePath
-      }
+        image: imagePath,
+      };
 
       const mediaPost = await createMediaPost(mediaPostData);
 
@@ -91,6 +104,7 @@ router.post("/createPost", authenticateToken, upload.single("image"), async (req
         error: "Đã có lỗi xảy ra khi tạo bài viết. Chi tiết: " + error.message,
       });
     }
-  });
+  }
+);
 
 module.exports = router;

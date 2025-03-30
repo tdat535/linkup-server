@@ -22,7 +22,12 @@ const User = sequelize.define('User', {
   password: {
     type: DataTypes.STRING,
     allowNull: false
-  }
+  },
+  type: {
+    type: DataTypes.ENUM('admin', 'subAdmin', 'user'),
+    allowNull: false,
+    defaultValue: 'user'
+  },
 }, {
   timestamps: true
 });

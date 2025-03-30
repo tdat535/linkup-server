@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user"); // Assuming you have a User model
 const RefreshToken = require("../models/refreshToken");
 const Follow = require("../models/follow");
-const MediaPost = require("../models/mediaPost")
+const MediaPost = require("../models/mediaPost");
 const { Op } = require("sequelize");
 
 const { getFollow } = require("./follow-services");
@@ -110,8 +110,8 @@ const login = async (userData) => {
       };
     }
 
-    const accessToken = generateAccessToken(user.id);
-    const refreshToken = generateRefreshToken(user.id);
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
     await RefreshToken.create({ userId: user.id, token: refreshToken });
     // // 🔥 Kiểm tra nếu user đã có token thì update, nếu chưa có thì tạo mới
@@ -134,7 +134,7 @@ const login = async (userData) => {
       Email: user.email,
       Phonenumber: user.phonenumber,
       Avatar: user.avatar,
-      UserType: user.userType || "user",
+      UserType: user.type || "user",
     };
   } catch (error) {
     console.error("Login Error:", error);
@@ -176,7 +176,7 @@ const createNewAccessToken = async (token) => {
     }
 
     // Tạo Access Token mới
-    const newAccessToken = generateAccessToken(user.id);
+    const newAccessToken = generateAccessToken(user);
 
     return {
       IsSuccess: true,
@@ -190,15 +190,29 @@ const createNewAccessToken = async (token) => {
 };
 
 // Hàm tạo Access Token
-const generateAccessToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
+const generateAccessToken = (User) => {
+  return jwt.sign(
+    {
+      id: User.id,
+      type: User.type, // Thêm type vào token
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
 };
 
 // Hàm tạo Refresh Token
-const generateRefreshToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "7d",
-  });
+const generateRefreshToken = (User) => {
+  return jwt.sign(
+    {
+      id: User.id,
+      type: User.type, // Thêm type vào token
+    },
+    process.env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
 };
 
 const logout = async (refreshToken) => {
@@ -251,13 +265,7 @@ const useSearch = async (userData) => {
 
     const users = await User.findAll({
       where: { [Op.or]: searchConditions },
-      attributes: [
-        "id",
-        "username",
-        "email",
-        "phonenumber",
-        "avatar",
-      ],
+      attributes: ["id", "username", "email", "phonenumber", "avatar"],
     });
 
     if (!users.length) {

@@ -76,8 +76,9 @@ const initSocket = (server) => {
 
     // MESSAGING
     socket.on("sendMessage", async (message) => {
-      const { senderId, receiverId, content, image } = message;
+      console.log("sendMessage event received:", message); // Kiểm tra xem sự kiện đã nhận được tin nhắn chưa
       
+      const { senderId, receiverId, content, image } = message;
       try {
         // Store message in database
         const newMessage = await Messenger.create({
@@ -86,7 +87,7 @@ const initSocket = (server) => {
           content,
           image,
         });
-
+    
         // Get full message data with sender/receiver info
         const fullMessage = await Messenger.findOne({
           where: { id: newMessage.id },
@@ -103,13 +104,13 @@ const initSocket = (server) => {
             },
           ],
         });
-
+    
         // Emit to receiver if they're online
         const receiverSocketId = onlineUsers.get(receiverId);
         if (receiverSocketId) {
           io.to(receiverSocketId).emit("receiveMessage", fullMessage);
           
-          // Also emit notification
+          // Emit notification for the receiver
           io.to(receiverSocketId).emit("notification", {
             type: "message",
             message: `New message from ${fullMessage.sender.username}`,
@@ -118,12 +119,20 @@ const initSocket = (server) => {
               messagePreview: content.substring(0, 30) + (content.length > 30 ? "..." : "")
             }
           });
+
+          console.log("Notification sent to receiver:", receiverId);  // Thêm log này
+
+    
+          console.log(`Message sent to ${receiverId}:`, fullMessage);  // Kiểm tra lại console log này
+        } else {
+          console.log(`Receiver ${receiverId} is not online.`);
         }
       } catch (error) {
         console.error("Error sending message:", error);
         socket.emit("errorMessage", { error: "Failed to send message" });
       }
     });
+    
 
     // COMMENTS
     socket.on("addComment", async (commentData) => {

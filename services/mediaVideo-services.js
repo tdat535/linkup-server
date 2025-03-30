@@ -82,7 +82,7 @@ const getMediaVideos = async (userId) => {
       include: [
         {
           model: User,
-          attributes: ["username", "avatar"],
+          attributes: ["id", "username", "avatar"], // Thêm thông tin username của người đăng bài
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -99,4 +99,25 @@ const getMediaVideos = async (userId) => {
   }
 };
 
-module.exports = { createMediaVideo, getMediaVideos };
+const getAllVideoPost = async () => {
+  try {
+    const list = await MediaVideo.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "username", "avatar"], // Thêm thông tin username của người đăng bài
+        },
+      ],
+    });
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Lấy danh sách tất cả bài viết video thành công",
+      data: list,
+    };
+  } catch (error) {
+    throw new Error("Error getting media posts: " + error.message);
+  }
+};
+
+module.exports = { createMediaVideo, getMediaVideos, getAllVideoPost };

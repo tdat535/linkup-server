@@ -1,7 +1,8 @@
 const express = require("express");
 const {
   createMediaVideo,
-  getMediaVideos
+  getMediaVideos,
+  getAllVideoPost
 } = require("../services/mediaVideo-services");
 const authenticateToken = require("../middleware/authenticateToken");
 const multer = require("multer");
@@ -68,6 +69,31 @@ router.get("/getVideos", authenticateToken, async (req, res) => {
       isSuccess: false,
       message: "Lỗi khi lấy danh sách video, vui lòng thử lại sau.",
     });
+  }
+});
+
+router.get("/getAllVideoPost", authenticateToken, async (req, res) => {
+  console.log("User Info:", req.user); // Kiểm tra dữ liệu từ JWT
+  try {
+    if (req.user.type !== 'admin') {
+      return res.status(403).send({
+        isSuccess: false,
+        message: "Bạn không có quyền truy cập.",
+      });
+    }
+
+    const mediaPosts = await getAllVideoPost();
+    if (!mediaPosts.isSuccess) {
+      return res.status(mediaPosts.status).send({
+        isSuccess: false,
+        status: mediaPosts.status,
+        message: mediaPosts.error || "Có lỗi xảy ra.",
+      });
+    }
+    res.status(200).send(mediaPosts);
+  } catch (error) {
+    res.status(400).send("Something went wrong!");
+    console.log(error);
   }
 });
 

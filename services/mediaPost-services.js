@@ -106,7 +106,7 @@ const getMediaPosts = async (userId) => {
       include: [
         {
           model: User,
-          attributes: ["username", "avatar"], // Thêm thông tin username của người đăng bài
+          attributes: ["id", "username", "avatar"], // Thêm thông tin username của người đăng bài
         },
       ],
       order: [["createdAt", "DESC"]], // Sắp xếp theo thời gian tạo (mới nhất ở trên)
@@ -123,9 +123,16 @@ const getMediaPosts = async (userId) => {
   }
 };
 
-const getAll = async () => {
+const getAllMediaPost = async () => {
   try {
-    const list = await MediaPost.findAll();
+    const list = await MediaPost.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "username", "avatar"], // Thêm thông tin username của người đăng bài
+        },
+      ],
+    });
     return {
       isSuccess: true,
       status: 200,
@@ -137,4 +144,4 @@ const getAll = async () => {
   }
 };
 
-module.exports = { getMediaPosts, createMediaPost, getAll };
+module.exports = { getMediaPosts, createMediaPost, getAllMediaPost };
