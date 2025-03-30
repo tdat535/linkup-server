@@ -285,7 +285,10 @@ const useSearch = async (userData) => {
 
 const getUserPosts = async (userId) => {
   return await MediaPost.findAll({
-    where: { userId },
+    where: { 
+      userId,
+      status: "active", // Chỉ lấy các bài viết có trạng thái là 'active'
+     },
     include: [
       {
         model: User,

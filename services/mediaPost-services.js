@@ -98,10 +98,11 @@ const getMediaPosts = async (userId) => {
     // Thêm chính userId để lấy cả bài viết của người đó
     followedIds.push(userId);
 
-    // Lấy bài viết của những người trong danh sách theo dõi (bao gồm chính mình)
+    // Lấy bài viết có status là 'active' của những người trong danh sách theo dõi (bao gồm chính mình)
     const mediaPosts = await MediaPost.findAll({
       where: {
         userId: followedIds, // Tìm bài viết của userId và những người mà user đang theo dõi
+        status: 'active', // Chỉ lấy bài viết có status 'active'
       },
       include: [
         {
@@ -144,4 +145,70 @@ const getAllMediaPost = async () => {
   }
 };
 
-module.exports = { getMediaPosts, createMediaPost, getAllMediaPost };
+const hideMediaPost = async (postId) => {
+  try {
+    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
+    const updatedPost = await MediaPost.update(
+      { status: 'inactive' }, // Cập nhật trạng thái thành 'inactive'
+      {
+        where: {
+          id: postId, // Tìm bài viết theo ID
+          status: 'active', // Chỉ cập nhật các bài viết có trạng thái là 'active'
+        },
+      }
+    );
+
+    if (updatedPost[0] === 0) {
+      // Nếu không có bài viết nào được cập nhật
+      return {
+        isSuccess: false,
+        status: 400,
+        message: "Không tìm thấy bài viết với trạng thái 'active' để ẩn.",
+      };
+    }
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Ẩn bài viết thành công",
+    };
+  } catch (error) {
+    console.error("Error hiding media post:", error);
+    throw new Error("Error hiding media post: " + error.message);
+  }
+};
+
+const unHideMediaPost = async (postId) => {
+  try {
+    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
+    const updatedPost = await MediaPost.update(
+      { status: 'active' }, // Cập nhật trạng thái thành 'inactive'
+      {
+        where: {
+          id: postId, // Tìm bài viết theo ID
+          status: 'inactive', // Chỉ cập nhật các bài viết có trạng thái là 'active'
+        },
+      }
+    );
+
+    if (updatedPost[0] === 0) {
+      // Nếu không có bài viết nào được cập nhật
+      return {
+        isSuccess: false,
+        status: 400,
+        message: "Không tìm thấy bài viết với trạng thái 'inactive' để hiện thị.",
+      };
+    }
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Hiện thị bài viết thành công",
+    };
+  } catch (error) {
+    console.error("Error hiding media post:", error);
+    throw new Error("Error hiding media post: " + error.message);
+  }
+};
+
+module.exports = { getMediaPosts, createMediaPost, getAllMediaPost, hideMediaPost, unHideMediaPost };
