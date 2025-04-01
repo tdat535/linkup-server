@@ -98,6 +98,15 @@ const login = async (userData) => {
       };
     }
 
+    // Kiểm tra trạng thái tài khoản
+    if (user.status !== "active") {
+      return {
+        isSuccess: false,
+        status: 403,
+        error: "Tài khoản của bạn đã bị khóa",
+      };
+    }
+
     const isPasswordValid = await bcrypt.compare(
       userData.password,
       user.password
@@ -105,7 +114,7 @@ const login = async (userData) => {
     if (!isPasswordValid) {
       return {
         isSuccess: false,
-        status: 404,
+        status: 401,
         error: "Sai mật khẩu",
       };
     }
@@ -114,14 +123,6 @@ const login = async (userData) => {
     const refreshToken = generateRefreshToken(user);
 
     await RefreshToken.create({ userId: user.id, token: refreshToken });
-    // // 🔥 Kiểm tra nếu user đã có token thì update, nếu chưa có thì tạo mới
-    // const existingToken = await RefreshToken.findOne({ where: { userId: user.id } });
-
-    // if (existingToken) {
-    //     await existingToken.update({ token: refreshToken });
-    // } else {
-    //
-    // }
 
     return {
       isSuccess: true,
@@ -141,6 +142,7 @@ const login = async (userData) => {
     return { error: "Error logging in", status: 500 };
   }
 };
+
 
 const createNewAccessToken = async (token) => {
   try {
@@ -310,19 +312,22 @@ const userProfile = async (userId, currentUserId) => {
     // Lấy danh sách bài viết của người dùng
     const userPosts = await getUserPosts(userId);
 
+    // Nếu tài khoản bị khóa, thay đổi username
+    const displayUsername = user.status === "inactive" ? "Tài khoản đã bị khóa" : user.username;
+
     if (userId === currentUserId) {
       return {
         isSuccess: true,
         status: 200,
         message: "Hiển thị trang cá nhân của bạn",
         UserId: user.id,
-        username: user.username,
+        username: displayUsername,
         email: user.email,
         phonenumber: user.phonenumber,
         avatar: user.avatar,
         following: (await getFollow(userId)).following,
         followers: (await getFollow(userId)).followers,
-        posts: userPosts, // Thêm danh sách bài viết vào đây
+        posts: userPosts,
       };
     }
 
@@ -347,18 +352,141 @@ const userProfile = async (userId, currentUserId) => {
       status: 200,
       message: "Hiển thị trang cá nhân của người dùng",
       UserId: user.id,
-      username: user.username,
+      username: displayUsername,
       email: user.email,
       phonenumber: user.phonenumber,
       avatar: user.avatar,
       following: (await getFollow(userId)).following,
       followers: (await getFollow(userId)).followers,
       followStatus,
-      posts: userPosts, // Thêm danh sách bài viết vào đây
+      posts: userPosts,
     };
   } catch (error) {
     console.error("Profile Error:", error);
     return { error: "Lỗi xảy ra khi lấy thông tin người dùng", status: 500 };
+  }
+};
+
+
+const getAllUser = async () => {
+  try {
+    const users = await User.findAll();
+
+    const userList = await Promise.all(
+      users.map(async (user) => {
+        // Lấy danh sách bài viết của user (chỉ lấy bài viết active)
+        const posts = await MediaPost.findAll({
+          where: { userId: user.id, status: "active" },
+          attributes: ["id", "content", "image", "createdAt"],
+          order: [["createdAt", "DESC"]],
+        });
+
+        // Đếm số lượng bài viết
+        const postCount = posts.length;
+
+        // Đếm số lượng người đang theo dõi
+        const followingCount = await Follow.count({
+          where: { followerId: user.id },
+        });
+
+        // Đếm số lượng người theo dõi
+        const followersCount = await Follow.count({
+          where: { followingId: user.id },
+        });
+
+        return {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          phonenumber: user.phonenumber,
+          type: user.type,
+          status: user.status,
+          avatar: user.avatar,
+          postCount,
+          followingCount,
+          followersCount,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+      })
+    );
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Lấy danh sách tất cả người dùng thành công",
+      data: userList,
+    };
+  } catch (error) {
+    throw new Error("Error getting user list: " + error.message);
+  }
+};
+
+
+
+const hideUser = async (userId) => {
+  try {
+    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
+    const updateUser = await User.update(
+      { status: 'inactive' }, // Cập nhật trạng thái thành 'inactive'
+      {
+        where: {
+          id: userId, // Tìm bài viết theo ID
+          status: 'active', // Chỉ cập nhật các bài viết có trạng thái là 'active'
+        },
+      }
+    );
+
+    if (updateUser[0] === 0) {
+      // Nếu không có bài viết nào được cập nhật
+      return {
+        isSuccess: false,
+        status: 400,
+        message: "Không tìm thấy bài viết với trạng thái 'active' để ẩn.",
+      };
+    }
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Ẩn bài viết thành công",
+    };
+  } catch (error) {
+    console.error("Error hiding media post:", error);
+    throw new Error("Error hiding media post: " + error.message);
+  }
+};
+
+const unHideUser = async (userId) => {
+  try {
+    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
+    const upateUser = await User.update(
+      { status: 'active' }, // Cập nhật trạng thái thành 'inactive'
+      {
+        where: {
+          id: userId, // Tìm bài viết theo ID
+          status: 'inactive', // Chỉ cập nhật các bài viết có trạng thái là 'active'
+        },
+      }
+    );
+
+    if (upateUser[0] === 0) {
+      // Nếu không có bài viết nào được cập nhật
+      return {
+        isSuccess: false,
+        status: 400,
+        message: "Không tìm thấy bài viết với trạng thái 'inactive' để hiện thị.",
+      };
+    }
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Hiện thị bài viết thành công",
+    };
+  } catch (error) {
+    console.error("Error hiding media post:", error);
+    throw new Error("Error hiding media post: " + error.message);
   }
 };
 
@@ -370,4 +498,7 @@ module.exports = {
   useSearch,
   logout,
   userProfile,
+  getAllUser,
+  hideUser,
+  unHideUser
 };

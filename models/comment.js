@@ -1,7 +1,8 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');  // Import kết nối
-const MediaPost = require('./mediaPost'); // Import sau khi đã định nghĩa MediaPost
 const User = require('./user'); // Import sau khi đã định nghĩa User
+const MediaPost = require('./mediaPost'); // Import bài viết chữ
+const MediaVideo = require('./mediaVideo'); // Import bài viết video
 
 // Định nghĩa model Comment
 const Comment = sequelize.define('Comment', {
@@ -17,6 +18,10 @@ const Comment = sequelize.define('Comment', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+  postType: {
+    type: DataTypes.ENUM('post', 'video'), // Xác định loại bài viết
+    allowNull: false
+  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false
@@ -25,11 +30,14 @@ const Comment = sequelize.define('Comment', {
   timestamps: true
 });
 
-// Thiết lập quan hệ
+// Quan hệ với User
+Comment.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+User.hasMany(Comment, { foreignKey: 'userId', onDelete: 'CASCADE' });
+
 Comment.belongsTo(MediaPost, { foreignKey: 'postId', onDelete: 'CASCADE' });
 MediaPost.hasMany(Comment, { foreignKey: 'postId', onDelete: 'CASCADE' });
 
-Comment.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
-User.hasMany(Comment, { foreignKey: 'userId', onDelete: 'CASCADE' });
+// Không thiết lập quan hệ trực tiếp với MediaPost và MediaVideo để linh hoạt hơn
+// Khi query, sẽ dựa vào postType để xác định bảng nào cần lấy dữ liệu
 
 module.exports = Comment;

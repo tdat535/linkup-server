@@ -11,8 +11,13 @@ const Like = sequelize.define('Like', {
     userId: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }
-    }, {
+    },
+    postType: {
+        type: DataTypes.ENUM('post', 'video'), // Xác định loại bài viết
+        allowNull: false
+      },
+    },
+     {
     timestamps: true
 });
 

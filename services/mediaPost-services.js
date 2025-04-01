@@ -2,6 +2,9 @@ const MediaPost = require("../models/mediaPost"); // Assuming you have a User mo
 const Follow = require("../models/follow");
 const User = require("../models/user");
 const cloudinary = require("cloudinary").v2;
+const { fn, col, literal } = require("sequelize"); 
+const Like = require("../models/like");
+const Comment = require("../models/comment");
 
 // Cấu hình Cloudinary
 cloudinary.config({
@@ -127,13 +130,40 @@ const getMediaPosts = async (userId) => {
 const getAllMediaPost = async () => {
   try {
     const list = await MediaPost.findAll({
+      attributes: [
+        "id",
+        "content",
+        "image",
+        "status",
+        "createdAt",
+        "updatedAt",
+        "userId",
+        // Đếm số lượng comment
+        [fn("COUNT", col("Comments.id")), "commentCount"],
+        // Đếm số lượng like
+        [fn("COUNT", col("Likes.id")), "likeCount"],
+      ],
       include: [
         {
           model: User,
-          attributes: ["id", "username", "avatar"], // Thêm thông tin username của người đăng bài
+          attributes: ["id", "username", "avatar"], // Lấy thông tin user
+        },
+        {
+          model: Comment,
+          attributes: [], // Không chọn toàn bộ cột, chỉ dùng COUNT
+          where: { postType: "post" },
+          required: false, 
+        },
+        {
+          model: Like,
+          attributes: [], // Không chọn toàn bộ cột, chỉ dùng COUNT
+          where: { postType: "post" },
+          required: false, 
         },
       ],
+      group: ["MediaPost.id", "User.id"], // Chỉ nhóm theo các cột chính
     });
+
     return {
       isSuccess: true,
       status: 200,

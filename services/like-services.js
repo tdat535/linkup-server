@@ -4,13 +4,15 @@ const createLike = async (like) => {
     try {
         const newLike = new Like({
             postId: like.postId,
-            userId: like.userId
+            userId: like.userId,
+            postType: like.postType,  // Bổ sung postType
         });
         await newLike.save();
         return {
-            id: like.id,
-            postId: like.postId,
-            userId: like.userId
+            isSuccess: true,
+            status: 200,
+            message: "Tạo lượt thích bài viết thành công",
+            data: newLike
         };
     } catch (error) {
         throw new Error('Error creating like: ' + error.message);
@@ -25,7 +27,9 @@ const getLikes = async (postId) => {
         });
 
         return {
-            success: true,
+            isSuccess: true,
+            status: 200,
+            message: "Lấy danh sách lượt thích bài viết thành công",
             data: likes
         };
     } catch (error) {
