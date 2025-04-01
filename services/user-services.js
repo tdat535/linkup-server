@@ -86,43 +86,33 @@ const register = async (userData) => {
   }
 };
 
-const login = async (userData) => {
+const login = async (userData, device) => {
   try {
     const user = await User.findOne({ where: { email: userData.email } });
 
     if (!user) {
-      return {
-        isSuccess: false,
-        status: 404,
-        error: "Người dùng không tồn tại",
-      };
+      return { isSuccess: false, status: 404, error: "Người dùng không tồn tại" };
     }
 
-    // Kiểm tra trạng thái tài khoản
     if (user.status !== "active") {
-      return {
-        isSuccess: false,
-        status: 403,
-        error: "Tài khoản của bạn đã bị khóa",
-      };
+      return { isSuccess: false, status: 403, error: "Tài khoản bị khóa" };
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      userData.password,
-      user.password
-    );
+    const isPasswordValid = await bcrypt.compare(userData.password, user.password);
     if (!isPasswordValid) {
-      return {
-        isSuccess: false,
-        status: 401,
-        error: "Sai mật khẩu",
-      };
+      return { isSuccess: false, status: 401, error: "Sai mật khẩu" };
     }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    await RefreshToken.create({ userId: user.id, token: refreshToken });
+    // Lưu RefreshToken vào DB với thông tin thiết bị và thời gian hết hạn 24h
+    await RefreshToken.create({
+      userId: user.id,
+      token: refreshToken,
+      device: device || "unknown", // Lưu tên thiết bị
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Hết hạn sau 24h
+    });
 
     return {
       isSuccess: true,
@@ -367,7 +357,6 @@ const userProfile = async (userId, currentUserId) => {
   }
 };
 
-
 const getAllUser = async () => {
   try {
     const users = await User.findAll();
@@ -422,40 +411,31 @@ const getAllUser = async () => {
   }
 };
 
-
-
 const hideUser = async (userId) => {
   try {
-    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
-    const updateUser = await User.update(
-      { status: 'inactive' }, // Cập nhật trạng thái thành 'inactive'
-      {
-        where: {
-          id: userId, // Tìm bài viết theo ID
-          status: 'active', // Chỉ cập nhật các bài viết có trạng thái là 'active'
-        },
-      }
+    const updatedUser = await User.update(
+      { status: "inactive" },
+      { where: { id: userId, status: "active" } }
     );
 
-    if (updateUser[0] === 0) {
-      // Nếu không có bài viết nào được cập nhật
-      return {
-        isSuccess: false,
-        status: 400,
-        message: "Không tìm thấy bài viết với trạng thái 'active' để ẩn.",
-      };
+    if (updatedUser[0] === 0) {
+      return { isSuccess: false, status: 400, message: "Không tìm thấy user active" };
     }
+
+    // Xóa tất cả RefreshToken của user
+    await RefreshToken.destroy({ where: { userId } });
 
     return {
       isSuccess: true,
       status: 200,
-      message: "Ẩn bài viết thành công",
+      message: "Ẩn người dùng thành công",
     };
   } catch (error) {
-    console.error("Error hiding media post:", error);
-    throw new Error("Error hiding media post: " + error.message);
+    console.error("Error hiding user:", error);
+    return { error: "Error hiding user", status: 500 };
   }
 };
+
 
 const unHideUser = async (userId) => {
   try {
