@@ -34,7 +34,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const result = await login(req.body);
-
+    console.log(result)
     if (!result.isSuccess) {
       return res.status(result.status).send({
         isSuccess: false,

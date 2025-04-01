@@ -86,9 +86,10 @@ const register = async (userData) => {
   }
 };
 
-const login = async (userData, device) => {
+const login = async (userData) => {
   try {
     const user = await User.findOne({ where: { email: userData.email } });
+    console.log("Received device:", userData.device); // Log the device data to confirm it's being passed correctly
 
     if (!user) {
       return { isSuccess: false, status: 404, error: "Người dùng không tồn tại" };
@@ -110,7 +111,7 @@ const login = async (userData, device) => {
     await RefreshToken.create({
       userId: user.id,
       token: refreshToken,
-      device: device || "unknown", // Lưu tên thiết bị
+      device: userData.device || "unknown", // Lưu tên thiết bị
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Hết hạn sau 24h
     });
 
@@ -132,7 +133,6 @@ const login = async (userData, device) => {
     return { error: "Error logging in", status: 500 };
   }
 };
-
 
 const createNewAccessToken = async (token) => {
   try {
