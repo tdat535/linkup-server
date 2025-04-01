@@ -39,6 +39,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'test.html')); // Dùng `path.join()`
 });
 
+app.get('/testapi', (req, res) => {
+  res.send("hello api");
+});
+
 // Đọc file API document
 // API Documentation (Redoc)
 const redoc = require('redoc-express');

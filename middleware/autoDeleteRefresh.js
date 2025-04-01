@@ -4,7 +4,7 @@ const deleteExpiredTokens = async () => {
   try {
     await RefreshToken.destroy({
       where: {
-        expiresAt: { [Op.lt]: new Date() }, // Xóa token hết hạn
+        expiresAt: { [Op.lt]: new Date() },
       },
     });
     console.log("Deleted expired refresh tokens");
@@ -13,4 +13,4 @@ const deleteExpiredTokens = async () => {
   }
 };
 
-setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Chạy mỗi giờ
+setInterval(deleteExpiredTokens, 60 * 60 * 1000); 
