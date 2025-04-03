@@ -35,8 +35,10 @@ const createMediaPost = async (mediaData) => {
           },
           (error, result) => {
             if (error) {
+              console.error("Lỗi upload Cloudinary:", error);
               reject("Lỗi tải lên Cloudinary");
             } else {
+              console.log("Upload thành công:", result);
               resolve(result);
             }
           }
@@ -47,21 +49,26 @@ const createMediaPost = async (mediaData) => {
         bufferStream.pipe(uploadStream);
       });
 
-      mediaUrl = uploadResponse.secure_url;
-      console.log("Tệp tin đã tải lên Cloudinary:", mediaUrl);
+      // Kiểm tra giá trị uploadResponse
+      if (uploadResponse && uploadResponse.secure_url) {
+        mediaUrl = uploadResponse.secure_url;
+      } else {
+        console.error("Lỗi: Không lấy được URL từ Cloudinary!");
+      }
     }
 
-    // 📌 Đảm bảo `type` luôn có giá trị
+    console.log("Media URL trước khi lưu vào DB:", mediaUrl);
+
     const newMediaContent = new MediaPost({
       content: mediaData.content,
-      url: mediaUrl,
+      mediaUrl: mediaUrl,
       userId: mediaData.userId,
       type: isVideo ? "video" : "post", // Gán loại nội dung
     });
 
     await newMediaContent.save();
 
-    const user = await User.findByPk(mediaData.userId); // Lấy thông tin người dùng từ bảng User
+    const user = await User.findByPk(mediaData.userId);
 
     return {
       isSuccess: true,
@@ -69,20 +76,19 @@ const createMediaPost = async (mediaData) => {
       message: `Tạo ${isVideo ? "video" : "bài viết"} thành công`,
       id: newMediaContent.id,
       content: newMediaContent.content,
-      mediaUrl,
+      mediaUrl, // Đảm bảo trả về URL đúng
       type: newMediaContent.type,
       User: {
         id: user.id,
         username: user.username,
         avatar: user.avatar,
-      }
+      },
     };
   } catch (error) {
     console.error("Lỗi khi tạo nội dung:", error);
     throw new Error("Lỗi tạo nội dung: " + error.message);
   }
 };
-
 
 const getMediaPosts = async (userId) => {
   try {
