@@ -8,7 +8,7 @@ const MediaPost = sequelize.define('MediaPost', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  url: {
+  mediaUrl: {
     type: DataTypes.STRING,
     allowNull: true
   },

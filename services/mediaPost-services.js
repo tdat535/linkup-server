@@ -110,7 +110,7 @@ const getMediaPosts = async (userId) => {
       attributes: [
         "id",
         "content",
-        "url",
+        "mediaUrl",
         "type",
         "createdAt",
         "updatedAt",
@@ -144,7 +144,7 @@ const getTrendingPosts = async () => {
       attributes: [
         "id",
         "content",
-        "url",
+        "mediaUrl",
         "type",
         "createdAt",
         "updatedAt",

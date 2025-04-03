@@ -12,7 +12,7 @@ const getAllMediaPost = async () => {
       attributes: [
         "id",
         "content",
-        "image",
+        "mediaUrl",
         "status",
         "createdAt",
         "updatedAt",
