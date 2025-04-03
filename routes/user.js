@@ -9,6 +9,8 @@ const {
   getAllUser,
   hideUser,
   unHideUser,
+  getUserDevices,
+  logoutSpecificDevice,
 } = require("../services/user-services");
 const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
 const router = express.Router();
@@ -50,6 +52,63 @@ router.post("/login", async (req, res) => {
       status: 500,
       message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
     });
+  }
+});
+
+router.get("/getUserDevices", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Lấy userId từ token
+    const devices = await getUserDevices(userId);
+    if (!devices.isSuccess) {
+      return res.status(devices.status).send({
+        isSuccess: false,
+        status: devices.status,
+        message: devices.error || "Có lỗi xảy ra.",
+      });
+    }
+    res.status(200).send(devices);
+  } catch (error) {
+    console.error("Lỗi lấy danh sách thiết bị:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+});
+
+router.get("/getUserDevices", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id; // Lấy userId từ token
+    const devices = await getUserDevices(userId);
+    if (!devices.isSuccess) {
+      return res.status(devices.status).send({
+        isSuccess: false,
+        status: devices.status,
+        message: devices.error || "Có lỗi xảy ra.",
+      });
+    }
+    res.status(200).send(devices);
+  } catch (error) {
+    console.error("Lỗi lấy danh sách thiết bị:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+});
+
+router.post("/logout-device", authenticateToken, async (req, res) => {
+  try {
+    const { deviceId } = req.body;
+    const userId = req.user.id; // Lấy userId từ token
+    const result = await logoutSpecificDevice(deviceId, userId);
+
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
+    }
+    res.status(200).send(result);
+  }
+  catch (error) {
+    console.error("Lỗi khi đăng xuất thiết bị:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
   }
 });
 
@@ -146,101 +205,5 @@ router.get("/profile", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/getAllUser", authenticateToken, async (req, res) => {
-  console.log("User Info:", req.user); // Kiểm tra dữ liệu từ JWT
-  try {
-    if (req.user.type !== 'admin') {
-      return res.status(403).send({
-        isSuccess: false,
-        message: "Bạn không có quyền truy cập.",
-      });
-    }
-
-    const allUser = await getAllUser();
-    if (!allUser.isSuccess) {
-      return res.status(allUser.status).send({
-        isSuccess: false,
-        status: allUser.status,
-        message: allUser.error || "Có lỗi xảy ra.",
-      });
-    }
-    res.status(200).send(allUser);
-  } catch (error) {
-    res.status(400).send("Something went wrong!");
-    console.log(error);
-  }
-});
-
-router.put("/hideUser/:id", authenticateToken, async (req, res) => {
-  try {
-    // Kiểm tra xem người dùng có phải là admin hay không
-    if (req.user.type !== 'admin') {
-      return res.status(403).send({
-        isSuccess: false,
-        message: "Bạn không có quyền truy cập.",
-      });
-    }
-
-    const userId = req.params.id; // Lấy ID của bài viết từ URL
-
-    // Gọi service để ẩn bài viết
-    const result = await hideUser(userId);
-
-    if (!result.isSuccess) {
-      return res.status(result.status).send({
-        isSuccess: false,
-        status: result.status,
-        message: result.message || "Có lỗi xảy ra.",
-      });
-    }
-
-    res.status(200).send({
-      isSuccess: true,
-      message: "Bài viết đã được ẩn thành công.",
-    });
-  } catch (error) {
-    console.error("Error hiding post:", error);
-    res.status(500).send({
-      isSuccess: false,
-      message: "Lỗi khi ẩn bài viết, vui lòng thử lại sau.",
-    });
-  }
-});
-
-router.put("/unHideUser/:id", authenticateToken, async (req, res) => {
-  try {
-    // Kiểm tra xem người dùng có phải là admin hay không
-    if (req.user.type !== 'admin') {
-      return res.status(403).send({
-        isSuccess: false,
-        message: "Bạn không có quyền truy cập.",
-      });
-    }
-
-    const userId = req.params.id; // Lấy ID của bài viết từ URL
-
-    // Gọi service để ẩn bài viết
-    const result = await unHideUser(userId);
-
-    if (!result.isSuccess) {
-      return res.status(result.status).send({
-        isSuccess: false,
-        status: result.status,
-        message: result.message || "Có lỗi xảy ra.",
-      });
-    }
-
-    res.status(200).send({
-      isSuccess: true,
-      message: "Bài viết đã được hiện thị thành công.",
-    });
-  } catch (error) {
-    console.error("Error hiding post:", error);
-    res.status(500).send({
-      isSuccess: false,
-      message: "Lỗi khi ẩn bài viết, vui lòng thử lại sau.",
-    });
-  }
-});
 
 module.exports = router;

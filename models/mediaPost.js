@@ -8,7 +8,7 @@ const MediaPost = sequelize.define('MediaPost', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  image: {
+  url: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -20,7 +20,11 @@ const MediaPost = sequelize.define('MediaPost', {
     type: DataTypes.ENUM('active', 'inactive'),
     allowNull: false,
     defaultValue: 'active'
-  }
+  },
+  type: {
+    type: DataTypes.ENUM("post", "video"),
+    allowNull: false,
+  },
 }, {
   timestamps: true
 });

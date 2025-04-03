@@ -2,85 +2,81 @@ const MediaPost = require("../models/mediaPost"); // Assuming you have a User mo
 const Follow = require("../models/follow");
 const User = require("../models/user");
 const cloudinary = require("cloudinary").v2;
-const { fn, col, literal } = require("sequelize"); 
+const { fn, col, literal } = require("sequelize");
 const Like = require("../models/like");
 const Comment = require("../models/comment");
 
 // Cấu hình Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, // Lấy từ Cloudinary Console
-  api_key: process.env.CLOUDINARY_API_KEY,       // Lấy từ Cloudinary Console
-  api_secret: process.env.CLOUDINARY_API_SECRET  // Lấy từ Cloudinary Console
+  api_key: process.env.CLOUDINARY_API_KEY, // Lấy từ Cloudinary Console
+  api_secret: process.env.CLOUDINARY_API_SECRET, // Lấy từ Cloudinary Console
 });
 
-const createMediaPost = async (mediaPostData) => {
+const createMediaPost = async (mediaData) => {
   try {
-
-    if (mediaPostData.content === null || mediaPostData.content === undefined || mediaPostData.content.trim() === "") {
+    if (!mediaData.content || mediaData.content.trim() === "") {
       return {
         isSuccess: false,
         status: 400,
-        error: "Thiếu thông tin bài viết.",
+        error: "Thiếu nội dung bài viết.",
       };
     }
 
-    let imageUrl = null;
+    let mediaUrl = null;
+    const isVideo = mediaData.type === "video";
 
-    // Kiểm tra xem ảnh có tồn tại không
-    if (mediaPostData.image && mediaPostData.image.buffer) {
-      // Sử dụng Promise để chờ đợi kết quả upload
+    if (mediaData.file && mediaData.file.buffer) {
       const uploadResponse = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
-          { folder: 'media_posts', resource_type: 'image' },
+          {
+            folder: isVideo ? "media_videos" : "media_posts",
+            resource_type: isVideo ? "video" : "image",
+          },
           (error, result) => {
             if (error) {
-              reject("Error uploading image to Cloudinary");
+              reject("Error uploading file to Cloudinary");
             } else {
               resolve(result);
             }
           }
         );
 
-        // Đọc dữ liệu từ buffer và gửi lên Cloudinary
         const bufferStream = new require("stream").PassThrough();
-        bufferStream.end(mediaPostData.image.buffer);
+        bufferStream.end(mediaData.file.buffer);
         bufferStream.pipe(uploadStream);
       });
 
-      // Lấy URL ảnh sau khi upload thành công
-      imageUrl = uploadResponse.secure_url;
-      console.log("Image uploaded to Cloudinary:", imageUrl);
+      mediaUrl = uploadResponse.secure_url;
+      console.log("File uploaded to Cloudinary:", mediaUrl);
     }
 
-    // Kiểm tra kết quả trước khi tạo bài viết
-    // if (!imageUrl) {
-    //   console.error("Image URL is missing.");
-    //   throw new Error("Image URL is missing.");
-    // }
+    const newMediaContent = isVideo
+      ? new MediaVideo({
+          content: mediaData.content,
+          video: mediaUrl,
+          userId: mediaData.userId,
+        })
+      : new MediaPost({
+          content: mediaData.content,
+          image: mediaUrl,
+          userId: mediaData.userId,
+        });
 
-    console.log("Creating media post with image URL:", imageUrl);
-
-    // Tạo bài viết trong database
-    const newMediaPost = new MediaPost({
-      content: mediaPostData.content,
-      image: imageUrl,
-      userId: mediaPostData.userId,
-    });
-
-    await newMediaPost.save();
+    await newMediaContent.save();
 
     return {
       isSuccess: true,
       status: 200,
-      message: "Tạo bài viết thành công",
-      id: newMediaPost.id,
-      content: newMediaPost.content,
-      image: newMediaPost.image,
-      userId: newMediaPost.userId,
+      message: `Tạo ${isVideo ? "video" : "bài viết"} thành công`,
+      id: newMediaContent.id,
+      content: newMediaContent.content,
+      mediaUrl,
+      userId: newMediaContent.userId,
     };
   } catch (error) {
-    console.error("Error during media post creation:", error);
-    throw new Error("Error creating media post: " + error.message);
+    console.error("Error during media content creation:", error);
+    throw new Error("Error creating media content: " + error.message);
   }
 };
 
@@ -104,17 +100,28 @@ const getMediaPosts = async (userId) => {
     // Lấy bài viết có status là 'active' của những người trong danh sách theo dõi (bao gồm chính mình)
     const mediaPosts = await MediaPost.findAll({
       where: {
-        userId: followedIds, // Tìm bài viết của userId và những người mà user đang theo dõi
-        status: 'active', // Chỉ lấy bài viết có status 'active'
+        userId: followedIds,
+        status: "active",
       },
+      attributes: [
+        "id",
+        "content",
+        "url",
+        "type",
+        "createdAt",
+        "updatedAt",
+        [literal("(SELECT COUNT(*) FROM Likes WHERE Likes.postId = MediaPost.id)"), "likeCount"],
+        [literal("(SELECT COUNT(*) FROM Comments WHERE Comments.postId = MediaPost.id)"), "commentCount"],
+      ],
       include: [
         {
           model: User,
-          attributes: ["id", "username", "avatar"], // Thêm thông tin username của người đăng bài
+          attributes: ["id", "username", "avatar"],
         },
       ],
-      order: [["createdAt", "DESC"]], // Sắp xếp theo thời gian tạo (mới nhất ở trên)
+      order: [["createdAt", "DESC"]],
     });
+
 
     return {
       isSuccess: true,
@@ -127,118 +134,41 @@ const getMediaPosts = async (userId) => {
   }
 };
 
-const getAllMediaPost = async () => {
+const getTrendingPosts = async () => {
   try {
-    const list = await MediaPost.findAll({
+    const trendingPosts = await MediaPost.findAll({
       attributes: [
         "id",
         "content",
-        "image",
-        "status",
+        "url",
+        "type",
         "createdAt",
         "updatedAt",
-        "userId",
-        // Đếm số lượng comment
-        [fn("COUNT", col("Comments.id")), "commentCount"],
-        // Đếm số lượng like
-        [fn("COUNT", col("Likes.id")), "likeCount"],
+        [literal("(SELECT COUNT(*) FROM Likes WHERE Likes.postId = MediaPost.id)"), "likeCount"],
+        [literal("(SELECT COUNT(*) FROM Comments WHERE Comments.postId = MediaPost.id)"), "commentCount"],
+        [literal("((SELECT COUNT(*) FROM Likes WHERE Likes.postId = MediaPost.id) + (SELECT COUNT(*) FROM Comments WHERE Comments.postId = MediaPost.id))"), "interactionScore"],
       ],
       include: [
         {
           model: User,
-          attributes: ["id", "username", "avatar"], // Lấy thông tin user
-        },
-        {
-          model: Comment,
-          attributes: [], // Không chọn toàn bộ cột, chỉ dùng COUNT
-          where: { postType: "post" },
-          required: false, 
-        },
-        {
-          model: Like,
-          attributes: [], // Không chọn toàn bộ cột, chỉ dùng COUNT
-          where: { postType: "post" },
-          required: false, 
-        },
+          attributes: ["id", "username", "avatar"], // Lấy thông tin người đăng bài
+        }
       ],
-      group: ["MediaPost.id", "User.id"], // Chỉ nhóm theo các cột chính
+      order: [[literal("interactionScore"), "DESC"]],
+      limit: 10, // Giới hạn số bài viết
     });
 
     return {
       isSuccess: true,
       status: 200,
-      message: "Lấy danh sách tất cả bài viết thành công",
-      data: list,
+      message: "Lấy bài viết xu hướng thành công",
+      data: trendingPosts,
     };
   } catch (error) {
-    throw new Error("Error getting media posts: " + error.message);
+    console.error("Error getting trending posts:", error);
+    throw new Error("Error getting trending posts: " + error.message);
   }
 };
 
-const hideMediaPost = async (postId) => {
-  try {
-    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
-    const updatedPost = await MediaPost.update(
-      { status: 'inactive' }, // Cập nhật trạng thái thành 'inactive'
-      {
-        where: {
-          id: postId, // Tìm bài viết theo ID
-          status: 'active', // Chỉ cập nhật các bài viết có trạng thái là 'active'
-        },
-      }
-    );
 
-    if (updatedPost[0] === 0) {
-      // Nếu không có bài viết nào được cập nhật
-      return {
-        isSuccess: false,
-        status: 400,
-        message: "Không tìm thấy bài viết với trạng thái 'active' để ẩn.",
-      };
-    }
-
-    return {
-      isSuccess: true,
-      status: 200,
-      message: "Ẩn bài viết thành công",
-    };
-  } catch (error) {
-    console.error("Error hiding media post:", error);
-    throw new Error("Error hiding media post: " + error.message);
-  }
-};
-
-const unHideMediaPost = async (postId) => {
-  try {
-    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
-    const updatedPost = await MediaPost.update(
-      { status: 'active' }, // Cập nhật trạng thái thành 'inactive'
-      {
-        where: {
-          id: postId, // Tìm bài viết theo ID
-          status: 'inactive', // Chỉ cập nhật các bài viết có trạng thái là 'active'
-        },
-      }
-    );
-
-    if (updatedPost[0] === 0) {
-      // Nếu không có bài viết nào được cập nhật
-      return {
-        isSuccess: false,
-        status: 400,
-        message: "Không tìm thấy bài viết với trạng thái 'inactive' để hiện thị.",
-      };
-    }
-
-    return {
-      isSuccess: true,
-      status: 200,
-      message: "Hiện thị bài viết thành công",
-    };
-  } catch (error) {
-    console.error("Error hiding media post:", error);
-    throw new Error("Error hiding media post: " + error.message);
-  }
-};
-
-module.exports = { getMediaPosts, createMediaPost, getAllMediaPost, hideMediaPost, unHideMediaPost };
+module.exports = { getMediaPosts, createMediaPost, getTrendingPosts };

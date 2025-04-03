@@ -89,17 +89,23 @@ const register = async (userData) => {
 const login = async (userData) => {
   try {
     const user = await User.findOne({ where: { email: userData.email } });
-    console.log("Received device:", userData.device); // Log the device data to confirm it's being passed correctly
-
+    console.log("Received device:", userData.device);
     if (!user) {
-      return { isSuccess: false, status: 404, error: "Người dùng không tồn tại" };
+      return {
+        isSuccess: false,
+        status: 404,
+        error: "Người dùng không tồn tại",
+      };
     }
 
     if (user.status !== "active") {
       return { isSuccess: false, status: 403, error: "Tài khoản bị khóa" };
     }
 
-    const isPasswordValid = await bcrypt.compare(userData.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      userData.password,
+      user.password
+    );
     if (!isPasswordValid) {
       return { isSuccess: false, status: 401, error: "Sai mật khẩu" };
     }
@@ -233,6 +239,55 @@ const logout = async (refreshToken) => {
   }
 };
 
+const getUserDevices = async (userId) => {
+  try {
+    const devices = await RefreshToken.findAll({
+      where: { userId },
+      attributes: ["id", "device", "createdAt"], // Chỉ lấy thông tin cần thiết
+    });
+
+    if (!userId) {
+      return { error: "Không tìm thấy User Id", status: 404 };
+    }
+
+    if (!devices) {
+      return { error: "Không tìm thấy Devices", status: 404 };
+    }
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Lấy danh sách thiết bị thành công",
+      data: devices,
+    };
+  } catch (error) {
+    console.error("Lỗi lấy danh sách thiết bị:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+const logoutSpecificDevice = async (deviceId, userId) => {
+  try {
+    // Xóa token của thiết bị được chọn
+    const deleted = await RefreshToken.destroy({
+      where: { id: deviceId, userId },
+    });
+
+    if (!deleted) {
+      return { error: "Không tìm thấy Devices", status: 404 };
+    }
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Đăng xuất thiết bị thành công",
+    };
+  } catch (error) {
+    console.error("Lỗi logout thiết bị:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
 const useSearch = async (userData) => {
   try {
     if (!userData.email && !userData.username && !userData.phonenumber) {
@@ -277,10 +332,10 @@ const useSearch = async (userData) => {
 
 const getUserPosts = async (userId) => {
   return await MediaPost.findAll({
-    where: { 
+    where: {
       userId,
       status: "active", // Chỉ lấy các bài viết có trạng thái là 'active'
-     },
+    },
     include: [
       {
         model: User,
@@ -303,7 +358,8 @@ const userProfile = async (userId, currentUserId) => {
     const userPosts = await getUserPosts(userId);
 
     // Nếu tài khoản bị khóa, thay đổi username
-    const displayUsername = user.status === "inactive" ? "Tài khoản đã bị khóa" : user.username;
+    const displayUsername =
+      user.status === "inactive" ? "Tài khoản đã bị khóa" : user.username;
 
     if (userId === currentUserId) {
       return {
@@ -357,119 +413,6 @@ const userProfile = async (userId, currentUserId) => {
   }
 };
 
-const getAllUser = async () => {
-  try {
-    const users = await User.findAll();
-
-    const userList = await Promise.all(
-      users.map(async (user) => {
-        // Lấy danh sách bài viết của user (chỉ lấy bài viết active)
-        const posts = await MediaPost.findAll({
-          where: { userId: user.id, status: "active" },
-          attributes: ["id", "content", "image", "createdAt"],
-          order: [["createdAt", "DESC"]],
-        });
-
-        // Đếm số lượng bài viết
-        const postCount = posts.length;
-
-        // Đếm số lượng người đang theo dõi
-        const followingCount = await Follow.count({
-          where: { followerId: user.id },
-        });
-
-        // Đếm số lượng người theo dõi
-        const followersCount = await Follow.count({
-          where: { followingId: user.id },
-        });
-
-        return {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          phonenumber: user.phonenumber,
-          type: user.type,
-          status: user.status,
-          avatar: user.avatar,
-          postCount,
-          followingCount,
-          followersCount,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        };
-      })
-    );
-
-    return {
-      isSuccess: true,
-      status: 200,
-      message: "Lấy danh sách tất cả người dùng thành công",
-      data: userList,
-    };
-  } catch (error) {
-    throw new Error("Error getting user list: " + error.message);
-  }
-};
-
-const hideUser = async (userId) => {
-  try {
-    const updatedUser = await User.update(
-      { status: "inactive" },
-      { where: { id: userId, status: "active" } }
-    );
-
-    if (updatedUser[0] === 0) {
-      return { isSuccess: false, status: 400, message: "Không tìm thấy user active" };
-    }
-
-    // Xóa tất cả RefreshToken của user
-    await RefreshToken.destroy({ where: { userId } });
-
-    return {
-      isSuccess: true,
-      status: 200,
-      message: "Ẩn người dùng thành công",
-    };
-  } catch (error) {
-    console.error("Error hiding user:", error);
-    return { error: "Error hiding user", status: 500 };
-  }
-};
-
-
-const unHideUser = async (userId) => {
-  try {
-    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
-    const upateUser = await User.update(
-      { status: 'active' }, // Cập nhật trạng thái thành 'inactive'
-      {
-        where: {
-          id: userId, // Tìm bài viết theo ID
-          status: 'inactive', // Chỉ cập nhật các bài viết có trạng thái là 'active'
-        },
-      }
-    );
-
-    if (upateUser[0] === 0) {
-      // Nếu không có bài viết nào được cập nhật
-      return {
-        isSuccess: false,
-        status: 400,
-        message: "Không tìm thấy bài viết với trạng thái 'inactive' để hiện thị.",
-      };
-    }
-
-    return {
-      isSuccess: true,
-      status: 200,
-      message: "Hiện thị bài viết thành công",
-    };
-  } catch (error) {
-    console.error("Error hiding media post:", error);
-    throw new Error("Error hiding media post: " + error.message);
-  }
-};
-
 module.exports = {
   register,
   login,
@@ -477,8 +420,7 @@ module.exports = {
   logout,
   useSearch,
   logout,
+  getUserDevices,
+  logoutSpecificDevice,
   userProfile,
-  getAllUser,
-  hideUser,
-  unHideUser
 };
