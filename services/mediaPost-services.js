@@ -61,6 +61,8 @@ const createMediaPost = async (mediaData) => {
 
     await newMediaContent.save();
 
+    const user = await User.findByPk(mediaData.userId); // Lấy thông tin người dùng từ bảng User
+
     return {
       isSuccess: true,
       status: 200,
@@ -68,8 +70,12 @@ const createMediaPost = async (mediaData) => {
       id: newMediaContent.id,
       content: newMediaContent.content,
       mediaUrl,
-      userId: newMediaContent.userId,
       type: newMediaContent.type,
+      User: {
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+      }
     };
   } catch (error) {
     console.error("Lỗi khi tạo nội dung:", error);
