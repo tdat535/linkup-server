@@ -24,7 +24,7 @@ const createMediaPost = async (mediaData) => {
     }
 
     let mediaUrl = null;
-    const isVideo = mediaData.type === "video";
+    const isVideo = mediaData.type === "video"; // Xác định loại media
 
     if (mediaData.file && mediaData.file.buffer) {
       const uploadResponse = await new Promise((resolve, reject) => {
@@ -35,7 +35,7 @@ const createMediaPost = async (mediaData) => {
           },
           (error, result) => {
             if (error) {
-              reject("Error uploading file to Cloudinary");
+              reject("Lỗi tải lên Cloudinary");
             } else {
               resolve(result);
             }
@@ -48,20 +48,16 @@ const createMediaPost = async (mediaData) => {
       });
 
       mediaUrl = uploadResponse.secure_url;
-      console.log("File uploaded to Cloudinary:", mediaUrl);
+      console.log("Tệp tin đã tải lên Cloudinary:", mediaUrl);
     }
 
-    const newMediaContent = isVideo
-      ? new MediaVideo({
-          content: mediaData.content,
-          video: mediaUrl,
-          userId: mediaData.userId,
-        })
-      : new MediaPost({
-          content: mediaData.content,
-          image: mediaUrl,
-          userId: mediaData.userId,
-        });
+    // 📌 Đảm bảo `type` luôn có giá trị
+    const newMediaContent = new MediaPost({
+      content: mediaData.content,
+      url: mediaUrl,
+      userId: mediaData.userId,
+      type: isVideo ? "video" : "post", // Gán loại nội dung
+    });
 
     await newMediaContent.save();
 
@@ -73,12 +69,14 @@ const createMediaPost = async (mediaData) => {
       content: newMediaContent.content,
       mediaUrl,
       userId: newMediaContent.userId,
+      type: newMediaContent.type,
     };
   } catch (error) {
-    console.error("Error during media content creation:", error);
-    throw new Error("Error creating media content: " + error.message);
+    console.error("Lỗi khi tạo nội dung:", error);
+    throw new Error("Lỗi tạo nội dung: " + error.message);
   }
 };
+
 
 const getMediaPosts = async (userId) => {
   try {
