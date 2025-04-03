@@ -2,9 +2,6 @@ const express = require("express");
 const {
   getMediaPosts,
   createMediaPost,
-  getAllMediaPost,
-  hideMediaPost,
-  unHideMediaPost,
   getTrendingPosts
 } = require("../services/mediaPost-services");
 const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
@@ -89,7 +86,7 @@ router.post("/createMedia", authenticateToken, upload.single("file"), async (req
         type,
       };
 
-      const mediaResponse = await createMediaContent(mediaData);
+      const mediaResponse = await createMediaPost(mediaData);
 
       if (!mediaResponse.isSuccess) {
         return res.status(mediaResponse.status).send({
