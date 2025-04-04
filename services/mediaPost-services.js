@@ -49,7 +49,6 @@ const createMediaPost = async (mediaData) => {
         bufferStream.pipe(uploadStream);
       });
 
-      // Kiểm tra giá trị uploadResponse
       if (uploadResponse && uploadResponse.secure_url) {
         mediaUrl = uploadResponse.secure_url;
       } else {
@@ -63,7 +62,7 @@ const createMediaPost = async (mediaData) => {
       content: mediaData.content,
       mediaUrl: mediaUrl,
       userId: mediaData.userId,
-      type: isVideo ? "video" : "post", // Gán loại nội dung
+      type: isVideo ? "video" : "post", 
     });
 
     await newMediaContent.save();
@@ -76,7 +75,7 @@ const createMediaPost = async (mediaData) => {
       message: `Tạo ${isVideo ? "video" : "bài viết"} thành công`,
       id: newMediaContent.id,
       content: newMediaContent.content,
-      mediaUrl, // Đảm bảo trả về URL đúng
+      mediaUrl, 
       type: newMediaContent.type,
       User: {
         id: user.id,
@@ -92,13 +91,12 @@ const createMediaPost = async (mediaData) => {
 
 const getMediaPosts = async (userId) => {
   try {
-    // Tìm danh sách những người mà user đang theo dõi và trạng thái là "accepted"
     const followingList = await Follow.findAll({
       where: {
         followerId: userId,
-        status: "accepted", // Chỉ lấy các follow với trạng thái 'accepted'
+        status: "accepted", 
       },
-      attributes: ["followingId"], // Chỉ lấy ID người được theo dõi
+      attributes: ["followingId"], 
     });
 
     // Lấy danh sách ID của những người mà user đang theo dõi
@@ -132,7 +130,6 @@ const getMediaPosts = async (userId) => {
       order: [["createdAt", "DESC"]],
     });
 
-
     return {
       isSuccess: true,
       status: 200,
@@ -161,11 +158,11 @@ const getTrendingPosts = async () => {
       include: [
         {
           model: User,
-          attributes: ["id", "username", "avatar"], // Lấy thông tin người đăng bài
+          attributes: ["id", "username", "avatar"],
         }
       ],
       order: [[literal("interactionScore"), "DESC"]],
-      limit: 10, // Giới hạn số bài viết
+      limit: 10, 
     });
 
     return {
@@ -179,6 +176,5 @@ const getTrendingPosts = async () => {
     throw new Error("Error getting trending posts: " + error.message);
   }
 };
-
 
 module.exports = { getMediaPosts, createMediaPost, getTrendingPosts };

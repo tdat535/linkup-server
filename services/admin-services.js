@@ -131,7 +131,7 @@ const getAllUser = async () => {
         // Lấy danh sách bài viết của user (chỉ lấy bài viết active)
         const posts = await MediaPost.findAll({
           where: { userId: user.id, status: "active" },
-          attributes: ["id", "content", "image", "createdAt"],
+          attributes: ["id", "content", "mediaUrl", "createdAt"],
           order: [["createdAt", "DESC"]],
         });
 
