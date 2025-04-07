@@ -1,6 +1,6 @@
 const express = require("express");
 const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
-const { hideMediaPost, unHideMediaPost, getAllUser, getAllMediaPost, hideUser, unHideUser } = require("../services/admin-services");
+const { hideMediaPost, unHideMediaPost, getAllUser, getAllMediaPost, hideUser, unHideUser, dashboard } = require("../services/admin-services");
 
 const router = express.Router();
 
@@ -190,6 +190,33 @@ router.put("/unHideUser/:id", authenticateToken, async (req, res) => {
       isSuccess: false,
       message: "Lỗi khi ẩn bài viết, vui lòng thử lại sau.",
     });
+  }
+});
+
+router.get("/dashboard", async (req, res) => {
+  //console.log("User Info:", req.user); // Kiểm tra dữ liệu từ JWT
+  try {
+    // if (req.user.type !== "admin") {
+    //   return res.status(403).send({
+    //     isSuccess: false,
+    //     message: "Bạn không có quyền truy cập.",
+    //   });
+    // }
+
+    const result = await dashboard();
+
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.message || "Có lỗi xảy ra.",
+      });
+    }
+
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(400).send("Something went wrong!");
+    console.log(error);
   }
 });
 

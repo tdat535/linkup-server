@@ -5,6 +5,7 @@ const Like = require("../models/like");
 const Comment = require("../models/comment");
 const Follow = require("../models/follow");
 const RefreshToken = require("../models/refreshToken");
+const Messenger = require("../models/messenger"); // Assuming you have a Messenger model
 
 const getAllMediaPost = async () => {
   try {
@@ -239,6 +240,44 @@ const unHideUser = async (userId) => {
   }
 };
 
+const dashboard = async () => {
+  try {
+    // Đếm tổng số người dùng
+    const totalUsers = await User.count();
+
+    // Đếm bài viết theo loại
+    const totalTextPosts = await MediaPost.count({ where: { type: 'post' } });
+    const totalVideoPosts = await MediaPost.count({ where: { type: 'video' } });
+
+    // Đếm comment
+    const totalComments = await Comment.count();
+
+    // Đếm like
+    const totalLikes = await Like.count();
+
+    // Đếm tin nhắn
+    const totalMessages = await Messenger.count();
+
+    // Gửi về client
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Đã mở khóa người dùng thành công",
+      totalUsers,
+      totalTextPosts,
+      totalVideoPosts,
+      totalComments,
+      totalLikes,
+      totalMessages
+    };  
+    
+  } catch (error) {
+    console.error("Error hiding media post:", error);
+    throw new Error("Error hiding media post: " + error.message);
+  }
+};
+
+
 module.exports = {
   getAllMediaPost,
   hideMediaPost,
@@ -246,4 +285,5 @@ module.exports = {
   getAllUser,
   hideUser,
   unHideUser,
+  dashboard
 };
