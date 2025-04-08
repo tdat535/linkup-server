@@ -15,11 +15,12 @@ const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
       origin: [
-        "https://linkup-server-ir0g.onrender.com",
+        "https://linkup.id.vn",        // frontend của bạn
         "http://localhost:3000",
       ],
       methods: ["GET", "POST"],
       allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,  // ⚠️ cái này quan trọng để bật cookies!
     },
     transports: ["websocket", "polling"],
   });
