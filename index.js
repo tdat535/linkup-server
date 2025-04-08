@@ -17,22 +17,9 @@ const server = http.createServer(app); // Tạo server HTTP
 //   allowedHeaders: ['Content-Type', 'Authorization']
 // };
 
-const allowedOrigins = [
-  "https://linkup.id.vn",
-  "https://admin.linkup.id.vn",
-  "http://localhost:3000",
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    console.log("Origin request:", origin);
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
+  origin: 'http://localhost:3000', // domain frontend của bạn
+  credentials: true, // 👈 Cho phép gửi cookie
 }));
 
 app.use(express.json());

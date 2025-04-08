@@ -120,7 +120,7 @@ const login = async (userData) => {
       userId: user.id,
       token: refreshToken,
       device: userData.device || "unknown", // Lưu tên thiết bị
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Hết hạn sau 24h
+      expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 ngày
     });
 
     return {
@@ -142,28 +142,27 @@ const login = async (userData) => {
   }
 };
 
-const createNewAccessToken = async (token) => {
+const refreshTokenService = async (token) => {
   try {
     if (!token) {
       return {
         isSuccess: false,
-        status: 404,
-        error: "Refresh Token is required",
+        status: 400,
+        error: "Token không hợp lệ",
       };
     }
 
-    // Kiểm tra Refresh Token có tồn tại trong database không
-    const storedToken = await RefreshToken.findOne({ where: { token } });
+    const existingToken = await RefreshToken.findOne({ where: { token } });
 
-    if (!storedToken) {
+    if (!existingToken) {
       return {
         isSuccess: false,
-        status: 404,
-        error: "Invalid Refresh Token",
+        status: 403,
+        error: "Token không tồn tại trong hệ thống",
       };
     }
 
-    // Giải mã Refresh Token
+    // Giải mã token
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     const user = await User.findByPk(decoded.id);
 
@@ -171,21 +170,27 @@ const createNewAccessToken = async (token) => {
       return {
         isSuccess: false,
         status: 404,
-        error: "User not found",
+        error: "Không tìm thấy người dùng",
       };
     }
 
-    // Tạo Access Token mới
+    // Tạo access token mới
     const newAccessToken = generateAccessToken(user);
 
     return {
-      IsSuccess: true,
-      Status: 200,
-      AccessToken: newAccessToken,
-      TokenType: "bearer",
+      isSuccess: true,
+      status: 200,
+      message: "Tạo access token mới thành công",
+      accessToken: newAccessToken,
+      refreshToken: token, // hoặc có thể tạo mới nếu bạn muốn xoay vòng token
     };
-  } catch (error) {
-    throw new Error("Error refreshing token: " + error.message);
+  } catch (err) {
+    console.error("Lỗi khi refresh token:", err);
+    return {
+      isSuccess: false,
+      status: 401,
+      error: "Token không hợp lệ hoặc đã hết hạn",
+    };
   }
 };
 
@@ -418,7 +423,7 @@ const userProfile = async (userId, currentUserId) => {
 module.exports = {
   register,
   login,
-  createNewAccessToken,
+  refreshTokenService,
   logout,
   useSearch,
   logout,

@@ -2,7 +2,7 @@ const express = require("express");
 const {
   register,
   login,
-  createNewAccessToken,
+  refreshTokenService,
   useSearch,
   logout,
   userProfile,
@@ -48,11 +48,11 @@ router.post("/login", async (req, res) => {
     const refreshToken = result.RefreshToken;
 
     // ✅ Set cookie trước khi gửi response
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true, // Đảm bảo đang dùng HTTPS
-      sameSite: "Strict",
-      maxAge: 90 * 24 * 60 * 60 * 1000, // 90 ngày
+      secure: true, // 👈 Bắt buộc nếu dùng HTTPS
+      sameSite: 'None', // 👈 Nếu frontend và backend khác domain
+      maxAge: 90 * 24 * 60 * 60 * 1000,
     });
 
     // Sau đó mới gửi toàn bộ thông tin login
@@ -119,10 +119,10 @@ router.post("/refresh", async (req, res) => {
       res.status(result.status).json({ message: result.error });
     }
     // nếu muốn cập nhật cookie mới
-    res.cookie("refreshToken", result.refreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true, // 👈 nếu dùng HTTPS
-      sameSite: "Strict",
+      secure: true, // 👈 Bắt buộc nếu dùng HTTPS
+      sameSite: 'None', // 👈 Nếu frontend và backend khác domain
       maxAge: 90 * 24 * 60 * 60 * 1000,
     });
 
