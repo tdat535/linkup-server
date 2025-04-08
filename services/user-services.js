@@ -113,6 +113,8 @@ const login = async (userData) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
+    
+
     // Lưu RefreshToken vào DB với thông tin thiết bị và thời gian hết hạn 24h
     await RefreshToken.create({
       userId: user.id,
@@ -195,7 +197,7 @@ const generateAccessToken = (User) => {
       type: User.type, // Thêm type vào token
     },
     process.env.JWT_SECRET,
-    { expiresIn: "24h" }
+    { expiresIn: "5m" }
   );
 };
 
@@ -208,7 +210,7 @@ const generateRefreshToken = (User) => {
     },
     process.env.JWT_REFRESH_SECRET,
     {
-      expiresIn: "7d",
+      expiresIn: "90d",
     }
   );
 };
