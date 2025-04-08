@@ -36,7 +36,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const result = await login(req.body);
-    console.log(result);
+
     if (!result.isSuccess) {
       return res.status(result.status).send({
         isSuccess: false,
@@ -44,14 +44,19 @@ router.post("/login", async (req, res) => {
         message: result.error || "Có lỗi xảy ra.",
       });
     }
-    res.status(200).send(result);
 
+    const refreshToken = result.RefreshToken;
+
+    // ✅ Set cookie trước khi gửi response
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true, // 👈 nếu dùng HTTPS
-      sameSite: "Strict", // hoặc "Lax", tùy frontend
+      secure: true, // Đảm bảo đang dùng HTTPS
+      sameSite: "Strict",
       maxAge: 90 * 24 * 60 * 60 * 1000, // 90 ngày
     });
+
+    // Sau đó mới gửi toàn bộ thông tin login
+    res.status(200).send(result);
   } catch (error) {
     console.error(error);
     res.status(500).send({
@@ -61,6 +66,7 @@ router.post("/login", async (req, res) => {
     });
   }
 });
+
 
 router.get("/getUserDevices", authenticateToken, async (req, res) => {
   try {
@@ -104,15 +110,14 @@ router.post("/refresh", async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      return res.status(400).json({ message: "Refresh token không tồn tại" });
+      res.status(400).json({ message: "Refresh token không tồn tại" });
     }
 
     const result = await refreshTokenService(refreshToken);
 
     if (!result.isSuccess) {
-      return res.status(result.status).json({ message: result.error });
+      res.status(result.status).json({ message: result.error });
     }
-
     // nếu muốn cập nhật cookie mới
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
@@ -121,10 +126,10 @@ router.post("/refresh", async (req, res) => {
       maxAge: 90 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).send(result);
+    res.status(200).send(result);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Lỗi server" });
+    res.status(500).json({ message: "Lỗi server" });
   }
 });
 
@@ -142,9 +147,10 @@ router.post("/logout", async (req, res) => {
         message: result.error || "Có lỗi xảy ra.",
       });
     }
-    res.status(200).send(result);
-
+    
     res.clearCookie("refreshToken");
+
+    res.status(200).send(result);
 
   } catch (error) {
     console.error(error);
