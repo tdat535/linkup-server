@@ -17,7 +17,22 @@ const server = http.createServer(app); // Tạo server HTTP
 //   allowedHeaders: ['Content-Type', 'Authorization']
 // };
 
-app.use(cors());
+const allowedOrigins = [
+  "https://linkup.id.vn",
+  "https://admin.linkup.id.vn",
+  "http://localhost:3000",
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
 
 app.use(express.json());
 const cookieParser = require("cookie-parser");
