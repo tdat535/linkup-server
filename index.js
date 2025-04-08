@@ -17,10 +17,7 @@ const server = http.createServer(app); // Tạo server HTTP
 //   allowedHeaders: ['Content-Type', 'Authorization']
 // };
 
-app.use(cors({
-  origin: "http://localhost:3000", // 👈 phải là domain cụ thể, không được là "*"
-  credentials: true, // 👈 cần để browser gửi cookie đi
-}));
+app.use(cors());
 
 app.use(express.json());
 const cookieParser = require("cookie-parser");
