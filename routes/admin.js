@@ -193,15 +193,15 @@ router.put("/unHideUser/:id", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/dashboard", async (req, res) => {
-  //console.log("User Info:", req.user); // Kiểm tra dữ liệu từ JWT
+router.get("/dashboard", authenticateToken, async (req, res) => {
+  console.log("User Info:", req.user); // Kiểm tra dữ liệu từ JWT
   try {
-    // if (req.user.type !== "admin") {
-    //   return res.status(403).send({
-    //     isSuccess: false,
-    //     message: "Bạn không có quyền truy cập.",
-    //   });
-    // }
+    if (req.user.type !== "admin") {
+      return res.status(403).send({
+        isSuccess: false,
+        message: "Bạn không có quyền truy cập.",
+      });
+    }
 
     const result = await dashboard();
 
