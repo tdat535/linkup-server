@@ -48,7 +48,7 @@ router.post("/login", async (req, res) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // 👈 nếu dùng HTTPS
       sameSite: "Strict", // hoặc "Lax", tùy frontend
       maxAge: 90 * 24 * 60 * 60 * 1000, // 90 ngày
     });
@@ -116,7 +116,7 @@ router.post("/refresh", async (req, res) => {
     // nếu muốn cập nhật cookie mới
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // 👈 nếu dùng HTTPS
       sameSite: "Strict",
       maxAge: 90 * 24 * 60 * 60 * 1000,
     });

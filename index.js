@@ -18,8 +18,8 @@ const server = http.createServer(app); // Tạo server HTTP
 // };
 
 app.use(cors({
-  origin: "http://localhost:3000", // 👈 Chỉ định rõ domain FE
-  credentials: true,
+  origin: "http://localhost:3000", // 👈 phải là domain cụ thể, không được là "*"
+  credentials: true, // 👈 cần để browser gửi cookie đi
 }));
 
 app.use(express.json());
