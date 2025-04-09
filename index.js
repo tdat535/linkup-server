@@ -18,7 +18,7 @@ const server = http.createServer(app); // Tạo server HTTP
 // };
 
 app.use(cors({
-  origin: 'http://localhost:3000', // domain frontend của bạn
+  origin: 'https://linkup-kappa.vercel.app', // domain frontend của bạn
   credentials: true, // 👈 Cho phép gửi cookie
 }));
 

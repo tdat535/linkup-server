@@ -15,8 +15,7 @@ const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
       origin: [
-        "https://linkup.id.vn",
-        "https://admin.linkup.id.vn",
+        "https://linkup-kappa.vercel.app",
         "http://localhost:3000"
       ],
       methods: ["GET", "POST"],
