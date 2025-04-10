@@ -92,9 +92,10 @@ const initSocket = (server) => {
             senderId,
             receiverId,
             type: "message",
-            content: "Bạn có tin nhắn mới!",
+            message: "Bạn có tin nhắn mới!",
             isRead: false,
           });
+          
         } else {
           console.log(`Receiver ${receiverId} is not online.`);
         }

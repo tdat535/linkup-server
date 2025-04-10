@@ -1,25 +1,37 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');  // Import kết nối
-const User = require('./user'); // Import sau khi đã định nghĩa User
+const { sequelize } = require('../config/database');
+const User = require('./user');
 
-// Định nghĩa model Comment
 const Notification = sequelize.define('Notification', {
-  message: {
-    type: DataTypes.STRING,
+  senderId: {
+    type: DataTypes.INTEGER,
     allowNull: false
   },
   receiverId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  message: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  isRead: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
   receivingDate: {
-    type: DataTypes.DATE
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 }, {
   timestamps: true
 });
 
-// Quan hệ với User
+// Thiết lập quan hệ
 Notification.belongsTo(User, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
 User.hasMany(Notification, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
 
