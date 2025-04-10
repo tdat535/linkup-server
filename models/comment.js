@@ -2,7 +2,6 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');  // Import kết nối
 const User = require('./user'); // Import sau khi đã định nghĩa User
 const MediaPost = require('./mediaPost'); // Import bài viết chữ
-const MediaVideo = require('./mediaVideo'); // Import bài viết video
 
 // Định nghĩa model Comment
 const Comment = sequelize.define('Comment', {

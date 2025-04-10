@@ -45,6 +45,7 @@ app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
 app.use('/api/follow',require('./routes/follow'));
 app.use('/api/report',require('./routes/report'));
+app.use('/api/noti',require('./routes/notification'));
 
 app.use('/api/admin', require('./routes/admin'));
 
