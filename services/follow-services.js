@@ -9,31 +9,33 @@ const createFollow = async (followData) => {
       return { error: "Không thể tự follow chính mình.", status: 400 };
     }
 
-    // Kiểm tra người dùng tồn tại
     const follower = await User.findByPk(followerId);
     const following = await User.findByPk(followingId);
     if (!follower || !following) {
       return {
-        isSuccess: true,
+        isSuccess: false,
         status: 404,
         error: "Người dùng không tồn tại.",
       };
     }
 
-    // Kiểm tra đã follow chưa
     const existingFollow = await Follow.findOne({
       where: { followerId, followingId },
     });
     if (existingFollow) {
       return {
-        isSuccess: true,
-        status: 404,
+        isSuccess: false,
+        status: 400,
         error: "Bạn đã follow người này.",
       };
     }
 
-    // Tạo follow mới
-    const newFollow = await Follow.create({ followerId, followingId });
+    // ✅ Tạo bản ghi follow luôn với status: 'accepted'
+    const newFollow = await Follow.create({
+      followerId,
+      followingId,
+      status: 'accepted',
+    });
 
     return {
       isSuccess: true,
@@ -45,6 +47,7 @@ const createFollow = async (followData) => {
     throw new Error("Lỗi khi tạo follow: " + error.message);
   }
 };
+
 
 const getFollow = async (userId) => {
   try {

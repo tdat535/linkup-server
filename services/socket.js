@@ -262,82 +262,39 @@ const initSocket = (server) => {
     });
 
     // FOLLOWS
-    socket.on("followRequest", async (followData) => {
-      const { followerId, followingId } = followData;
-
+    socket.on("follow", async ({ followerId, followingId }) => {
       try {
-        // Store follow request in database
-        const newFollow = await Follow.create({
-          followerId,
-          followingId,
-          status: "pending", // Assuming you have a status field
-        });
-
-        // Get user info
-        const follower = await User.findOne({
-          where: { id: followerId },
+        const followingSocketId = onlineUsers.get(followingId);
+    
+        const follower = await User.findByPk(followerId, {
           attributes: ["id", "username", "avatar"],
         });
-
-        // Notify the user being followed
-        const targetSocketId = onlineUsers.get(followingId);
-        if (targetSocketId) {
-          io.to(targetSocketId).emit("notification", {
-            type: "followRequest",
-            message: `${follower.username} wants to follow you`,
+    
+        // Gửi thông báo nếu người được follow đang online
+        if (followingSocketId) {
+          io.to(followingSocketId).emit("followNotification", {
+            type: "follow",
+            message: `${follower.username} đã theo dõi bạn.`,
             data: {
               followerId,
-              followerName: follower.username,
-              followerAvatar: follower.avatar,
+              follower,
             },
+          });
+        } else {
+          // Lưu thông báo nếu offline
+          await Noti.create({
+            senderId: followerId,
+            receiverId: followingId,
+            type: "follow",
+            message: `${follower.username} đã theo dõi bạn.`,
+            isRead: false,
           });
         }
       } catch (error) {
-        console.error("Error processing follow request:", error);
-        socket.emit("errorMessage", { error: "Failed to send follow request" });
+        console.error("Lỗi khi xử lý follow:", error);
       }
     });
-
-    // Follow request response (accept/reject)
-    socket.on("followResponse", async (responseData) => {
-      const { followerId, followingId, accept } = responseData;
-
-      try {
-        const followRecord = await Follow.findOne({
-          where: { followerId, followingId },
-        });
-
-        if (followRecord) {
-          if (accept) {
-            await followRecord.update({ status: "accepted" });
-
-            // Notify the user who sent the request
-            const targetSocketId = onlineUsers.get(followerId);
-            if (targetSocketId) {
-              // Get user info for notification
-              const following = await User.findOne({
-                where: { id: followingId },
-                attributes: ["id", "username", "avatar"],
-              });
-
-              io.to(targetSocketId).emit("notification", {
-                type: "followAccepted",
-                message: `${following.username} accepted your follow request`,
-                data: { followingId, followingName: following.username },
-              });
-            }
-          } else {
-            // Rejected, just delete the record
-            await followRecord.destroy();
-          }
-        }
-      } catch (error) {
-        console.error("Error processing follow response:", error);
-        socket.emit("errorMessage", {
-          error: "Failed to process follow response",
-        });
-      }
-    });
+    
 
     // NEW POST CREATED
     socket.on("newPost", async (postData) => {
