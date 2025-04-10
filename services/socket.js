@@ -272,6 +272,7 @@ const initSocket = (server) => {
     
         // Gửi thông báo nếu người được follow đang online
         if (followingSocketId) {
+          console.log("📢 Gửi followNotification tới:", followingSocketId);
           io.to(followingSocketId).emit("followNotification", {
             type: "follow",
             message: `${follower.username} đã theo dõi bạn.`,
