@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const User = require('./user');
 
-const Notification = sequelize.define('Notification', {
+const Noti = sequelize.define('Noti', {
   senderId: {
     type: DataTypes.INTEGER,
     allowNull: false
@@ -32,7 +32,8 @@ const Notification = sequelize.define('Notification', {
 });
 
 // Thiết lập quan hệ
-Notification.belongsTo(User, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
-User.hasMany(Notification, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
+Noti.belongsTo(User, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
+User.hasMany(Noti, { foreignKey: 'receiverId', onDelete: 'CASCADE' });
 
-module.exports = Notification;
+
+module.exports = Noti;

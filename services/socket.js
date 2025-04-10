@@ -7,7 +7,6 @@ const Like = require("../models/like");
 const Follow = require("../models/follow");
 const MediaPost = require("../models/mediaPost");
 const Noti = require("../models/noti");
-
 // Track online users and their current viewing context
 const onlineUsers = new Map(); // userId -> socketId
 const userRooms = new Map(); // userId -> Set of rooms they're in
@@ -31,77 +30,234 @@ const initSocket = (server) => {
     let currentUserId = null;
 
     // User comes online
-    socket.on("userOnline", (userId) => {
+    socket.on("userOnline", async (userId) => {
       currentUserId = userId;
       onlineUsers.set(userId, socket.id);
       userRooms.set(userId, new Set());
 
-      // Let followers know this user is online
       notifyFollowersOfStatusChange(io, userId, "online");
-
-      // Send list of online friends to this user
       sendOnlineFriendsList(socket, userId);
+
+      // Gửi các notification chưa đọc
+      const unreadNotis = await Noti.findAll({
+        where: { receiverId: userId, isRead: false },
+      });
+      if (unreadNotis.length > 0) {
+        io.to(socket.id).emit("notification", {
+          type: "bulk",
+          message: "Bạn có thông báo chưa đọc!",
+          data: unreadNotis,
+        });
+      }
 
       console.log(`User ${userId} online: ${socket.id}`);
     });
+
+    // User joins a post page (to receive comments/likes updates for that post)
+    socket.on("joinPost", (postId) => {
+      if (!currentUserId) return;
+
+      const roomName = `post:${postId}`;
+      socket.join(roomName);
+
+      // Track which rooms this user has joined
+      const userRoomSet = userRooms.get(currentUserId) || new Set();
+      userRoomSet.add(roomName);
+      userRooms.set(currentUserId, userRoomSet);
+
+      console.log(`User ${currentUserId} joined room ${roomName}`);
+    });
+
+    // User leaves a post page
+    socket.on("leavePost", (postId) => {
+      if (!currentUserId) return;
+
+      const roomName = `post:${postId}`;
+      socket.leave(roomName);
+
+      // Remove from tracking
+      const userRoomSet = userRooms.get(currentUserId);
+      if (userRoomSet) {
+        userRoomSet.delete(roomName);
+      }
+
+      console.log(`User ${currentUserId} left room ${roomName}`);
+    });
+
     // MESSAGING
     socket.on("sendMessage", async (message) => {
-      console.log("sendMessage event received:", message); // Kiểm tra xem sự kiện đã nhận được tin nhắn chưa
-
       const { senderId, receiverId, content, image } = message;
+    
       try {
-        // Store message in database
-        const newMessage = await Messenger.create({
-          senderId,
-          receiverId,
-          content,
-          image,
-        });
-
-        // Get full message data with sender/receiver info
-        const fullMessage = await Messenger.findOne({
-          where: { id: newMessage.id },
-          include: [
-            {
-              model: User,
-              as: "sender",
-              attributes: ["id", "username", "avatar"],
-            },
-            {
-              model: User,
-              as: "receiver",
-              attributes: ["id", "username", "avatar"],
-            },
-          ],
-        });
-
-        // Emit to receiver if they're online
         const receiverSocketId = onlineUsers.get(receiverId);
+    
         if (receiverSocketId) {
-          io.to(receiverSocketId).emit("message", savedMessage);
-
-          // Emit notification tới người nhận
-          io.to(receiverSocketId).emit("notification", {
-            senderId,
-            type: "message",
-            content: "Bạn có tin nhắn mới!",
+          // ✅ Người nhận online: chỉ emit, KHÔNG lưu vào DB
+          const sender = await User.findOne({
+            where: { id: senderId },
+            attributes: ["id", "username", "avatar"],
           });
-
-          // Lưu notification vào DB
-          await Noti.create({
+    
+          const fakeMessage = {
+            id: Date.now(), // Có thể dùng tạm thời số giả (nếu cần để hiển thị client)
+            senderId,
+            receiverId,
+            content,
+            image,
+            createdAt: new Date(),
+            sender,
+            receiver: null,
+          };
+    
+          io.to(receiverSocketId).emit("receiveMessage", fakeMessage);
+    
+          io.to(receiverSocketId).emit("notification", {
+            type: "message",
+            message: `New message from ${sender.username}`,
+            data: {
+              senderId,
+              messagePreview:
+                content.substring(0, 30) + (content.length > 30 ? "..." : ""),
+            },
+          });
+    
+          console.log(`📨 Message emitted to ${receiverId} (online)`);
+        } else {
+          // ❌ Người nhận offline: lưu DB, không emit
+          const newMessage = await Messenger.create({
+            senderId,
+            receiverId,
+            content,
+            image,
+          });
+    
+          const newNoti = await Noti.create({
             senderId,
             receiverId,
             type: "message",
             message: "Bạn có tin nhắn mới!",
             isRead: false,
           });
-          
-        } else {
-          console.log(`Receiver ${receiverId} is not online.`);
+    
+          console.log(`💾 Message saved for offline user ${receiverId}`);
         }
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error("❌ Error sending message:", error);
         socket.emit("errorMessage", { error: "Failed to send message" });
+      }
+    });
+    
+
+    // COMMENTS
+    socket.on("addComment", async (commentData) => {
+      const { postId, userId, content, image } = commentData;
+
+      try {
+        // Store comment in database
+        const newComment = await Comment.create({
+          postId,
+          userId,
+          content,
+          image,
+        });
+
+        // Get post creator to notify them
+        const post = await MediaPost.findOne({ where: { id: postId } });
+
+        // Get user info for the commenter
+        const user = await User.findOne({
+          where: { id: userId },
+          attributes: ["id", "username", "avatar"],
+        });
+
+        const fullComment = { ...newComment.toJSON(), user };
+
+        // Broadcast to everyone viewing the post
+        io.to(`post:${postId}`).emit("newComment", fullComment);
+
+        // Notify post owner if they're not the commenter
+        if (post.userId !== userId) {
+          const ownerSocketId = onlineUsers.get(post.userId);
+          if (ownerSocketId) {
+            io.to(ownerSocketId).emit("notification", {
+              type: "comment",
+              message: `${user.username} commented on your post`,
+              data: {
+                postId,
+                commenterId: userId,
+                commenterName: user.username,
+                commentContent:
+                  content.substring(0, 30) + (content.length > 30 ? "..." : ""),
+              },
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error adding comment:", error);
+        socket.emit("errorMessage", { error: "Failed to add comment" });
+      }
+    });
+
+    // LIKES
+    socket.on("toggleLike", async (likeData) => {
+      const { postId, userId } = likeData;
+
+      try {
+        // Check if like exists
+        const existingLike = await Like.findOne({
+          where: { postId, userId },
+        });
+
+        let action;
+
+        if (existingLike) {
+          // Unlike
+          await existingLike.destroy();
+          action = "unlike";
+        } else {
+          // Like
+          await Like.create({ postId, userId });
+          action = "like";
+        }
+
+        // Get post creator to notify them
+        const post = await MediaPost.findOne({ where: { id: postId } });
+
+        // Get user info
+        const user = await User.findOne({
+          where: { id: userId },
+          attributes: ["id", "username", "avatar"],
+        });
+
+        // Get updated like count
+        const likeCount = await Like.count({ where: { postId } });
+
+        // Broadcast to everyone viewing the post
+        io.to(`post:${postId}`).emit("likeUpdate", {
+          postId,
+          likeCount,
+          userId,
+          action,
+        });
+
+        // Notify post owner of new like (but not unlike)
+        if (action === "like" && post.userId !== userId) {
+          const ownerSocketId = onlineUsers.get(post.userId);
+          if (ownerSocketId) {
+            io.to(ownerSocketId).emit("notification", {
+              type: "like",
+              message: `${user.username} liked your post`,
+              data: {
+                postId,
+                likerId: userId,
+                likerName: user.username,
+              },
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error toggling like:", error);
+        socket.emit("errorMessage", { error: "Failed to process like" });
       }
     });
 
@@ -183,6 +339,53 @@ const initSocket = (server) => {
       }
     });
 
+    // NEW POST CREATED
+    socket.on("newPost", async (postData) => {
+      const { postId, userId } = postData;
+
+      try {
+        // Find all followers of this user
+        const followers = await Follow.findAll({
+          where: {
+            followingId: userId,
+            status: "accepted",
+          },
+          attributes: ["followerId"],
+        });
+
+        // Get the post data
+        const post = await MediaPost.findOne({
+          where: { id: postId },
+          include: [
+            {
+              model: User,
+              attributes: ["id", "username", "avatar"],
+            },
+          ],
+        });
+
+        // Notify all online followers about the new post
+        followers.forEach((follower) => {
+          const followerSocketId = onlineUsers.get(follower.followerId);
+          if (followerSocketId) {
+            io.to(followerSocketId).emit("feedUpdate", post);
+
+            io.to(followerSocketId).emit("notification", {
+              type: "newPost",
+              message: `${post.User.username} shared a new post`,
+              data: {
+                postId,
+                creatorId: userId,
+                creatorName: post.User.username,
+              },
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error broadcasting new post:", error);
+      }
+    });
+
     // Typing indicator for messages
     socket.on("typing", (data) => {
       const { senderId, receiverId, isTyping } = data;
@@ -210,6 +413,69 @@ const initSocket = (server) => {
       console.log(`❌ WebSocket client disconnected: ${socket.id}`);
     });
   });
+
+  // Helper functions
+  async function notifyFollowersOfStatusChange(io, userId, status) {
+    try {
+      // Find all followers who have been accepted
+      const followers = await Follow.findAll({
+        where: {
+          followingId: userId,
+          status: "accepted",
+        },
+        attributes: ["followerId"],
+      });
+
+      // Get user data
+      const user = await User.findOne({
+        where: { id: userId },
+        attributes: ["id", "username", "avatar"],
+      });
+
+      // Notify all online followers about status change
+      followers.forEach((follower) => {
+        const followerSocketId = onlineUsers.get(follower.followerId);
+        if (followerSocketId) {
+          io.to(followerSocketId).emit("friendStatusChange", {
+            userId,
+            username: user.username,
+            status, // "online" or "offline"
+          });
+        }
+      });
+    } catch (error) {
+      console.error("Error notifying followers of status change:", error);
+    }
+  }
+
+  async function sendOnlineFriendsList(socket, userId) {
+    try {
+      // Find all people this user follows who accepted
+      const following = await Follow.findAll({
+        where: {
+          followerId: userId,
+          status: "accepted",
+        },
+        attributes: ["followingId"],
+      });
+
+      // Get IDs of followed users
+      const followingIds = following.map((follow) => follow.followingId);
+
+      // Filter to only those who are online
+      const onlineFriendIds = followingIds.filter((id) => onlineUsers.has(id));
+      const onlineFriends = await User.findAll({
+        where: { id: onlineFriendIds },
+        attributes: ["id", "username", "avatar"],
+      });
+      socket.emit("onlineFriends", onlineFriends);
+
+      // Send the list to the user
+      socket.emit("onlineFriends", onlineFriends);
+    } catch (error) {
+      console.error("Error sending online friends list:", error);
+    }
+  }
 
   return io;
 };
