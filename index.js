@@ -44,9 +44,11 @@ app.use('/api/comment', require('./routes/comment'));
 app.use('/api/like', require('./routes/like'));
 app.use('/api/texting', require('./routes/messenger'));
 app.use('/api/follow',require('./routes/follow'));
+app.use('/api/report',require('./routes/report'));
 
 app.use('/api/admin', require('./routes/admin'));
-app.get('/', (req, res) => {
+
+app.get('/testwebsocket', (req, res) => {
   res.sendFile(path.join(__dirname, 'test.html')); // Dùng `path.join()`
 });
 

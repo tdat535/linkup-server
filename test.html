@@ -1,23 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Socket.io</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <title>Socket Test</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
-    <h1>Socket.io Test</h1>
-    <script>
-        const socket = io("http://localhost:3000");
+  <h1>Socket.IO Test</h1>
+  <p id="status">Đang kết nối...</p>
 
-        socket.on("connect", () => {
-            console.log("✅ Socket connected!", socket.id);
-        });
+  <script>
+    const socket = io("http://localhost:4000", {
+      transports: ["websocket"],
+      withCredentials: true,
+    });
 
-        socket.on("connect_error", (err) => {
-            console.error("❌ Socket connection error:", err);
-        });
-    </script>
+    socket.on("connect", () => {
+      document.getElementById("status").innerText = "✅ Đã kết nối: " + socket.id;
+      console.log("Connected:", socket.id);
+
+      // Gửi sự kiện userOnline để test
+      socket.emit("userOnline", 1); // Giả sử userId là 1
+    });
+
+    socket.on("connect_error", (err) => {
+      document.getElementById("status").innerText = "❌ Lỗi kết nối: " + err.message;
+      console.error("Connection error:", err);
+    });
+
+    // Nghe thử sự kiện onlineFriends từ server
+    socket.on("onlineFriends", (data) => {
+      console.log("Danh sách bạn bè online:", data);
+    });
+  </script>
 </body>
 </html>

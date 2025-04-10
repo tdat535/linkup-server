@@ -6,6 +6,7 @@ const Comment = require("../models/comment");
 const Follow = require("../models/follow");
 const RefreshToken = require("../models/refreshToken");
 const Messenger = require("../models/messenger"); // Assuming you have a Messenger model
+const Report = require("../models/report"); // Assuming you have a Report model
 
 const getAllMediaPost = async () => {
   try {
@@ -277,6 +278,78 @@ const dashboard = async () => {
   }
 };
 
+const getAllReport = async () => {
+  try {
+    const reports = await Report.findAll({
+      attributes: [
+        "id",
+        "reportedUserId",
+        "reportedPostId",
+        "reportedMessageId",
+        "reason",
+        "type",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ],
+      include: [
+        {
+          model: User,
+          as: "reporter",
+          attributes: ["id", "username", "avatar"],
+        },
+        {
+          model: User,
+          as: "reportedUser",
+          attributes: ["id", "username", "avatar"],
+        },
+        {
+          model: MediaPost,
+          as: "reportedPost",
+          attributes: ["id", "content"],
+        },
+        {
+          model: Messenger,
+          as: "reportedMessage",
+          attributes: ["id", "content"],
+        },
+      ],
+    });
+
+    // Chuẩn hóa: Chỉ lấy thông tin đúng theo `type`
+    const formatted = reports.map((report) => {
+      let reportedTarget = null;
+
+      if (report.type === "user") {
+        reportedTarget = report.reportedUser;
+      } else if (report.type === "post") {
+        reportedTarget = report.reportedPost;
+      } else if (report.type === "message") {
+        reportedTarget = report.reportedMessage;
+      }
+
+      return {
+        id: report.id,
+        reason: report.reason,
+        type: report.type,
+        status: report.status,
+        createdAt: report.createdAt,
+        updatedAt: report.updatedAt,
+        reporter: report.reporter,
+        reported: reportedTarget,
+      };
+    });
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Lấy danh sách tất cả báo cáo thành công",
+      data: formatted,
+    };
+  } catch (error) {
+    throw new Error("Error getting report list: " + error.message);
+  }
+};
 
 module.exports = {
   getAllMediaPost,
@@ -285,5 +358,6 @@ module.exports = {
   getAllUser,
   hideUser,
   unHideUser,
-  dashboard
+  dashboard,
+  getAllReport
 };

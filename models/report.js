@@ -29,6 +29,11 @@ const Report = sequelize.define('Report', {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  status: {
+    type: DataTypes.ENUM('pending', 'finished'),
+    allowNull: false,
+    defaultValue: 'pending',
+  },
 }, {
   timestamps: true,
 });

@@ -16,7 +16,8 @@ const initSocket = (server) => {
     cors: {
       origin: [
         "https://linkup-kappa.vercel.app",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://localhost:400"
       ],
       methods: ["GET", "POST"],
       credentials: true, // ✅ Cho phép gửi cookie qua socket
