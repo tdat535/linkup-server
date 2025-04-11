@@ -17,5 +17,13 @@ const sequelize = new Sequelize(
 );
 
 // Kiểm tra kết nối
-const { Sequelize } = require('sequelize');
+const connectDB = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Database connected successfully!');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+  }
+};  
 
+module.exports = { sequelize, connectDB };
