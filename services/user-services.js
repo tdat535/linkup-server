@@ -481,8 +481,8 @@ const updateProfile = async (userId, updatedData) => {
           }
         );
     
-        const bufferStream = new stream.PassThrough();
-        bufferStream.end(updatedData.avatar.buffer);
+        const bufferStream = new require("stream").PassThrough();
+        bufferStream.end(mediaData.file.buffer);
         bufferStream.pipe(uploadStream);
       });
     
