@@ -211,7 +211,7 @@ const multer = require("multer");
 const storage = multer.memoryStorage(); // Lưu file vào bộ nhớ để upload lên Cloudinary
 const upload = multer({ storage: storage });
 
-router.put("/updateProfile", authenticateToken, upload.single("file"), async (req, res) => {
+router.put("/updateProfile", authenticateToken, upload.single("avatar"), async (req, res) => {
   try {
 
     let filePath = null;
