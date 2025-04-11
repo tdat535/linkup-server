@@ -3,6 +3,7 @@ const {
   reportPost,
   reportUser,
   reportMessage,
+  resolvePostReport
 } = require("../services/report-services");
 const authenticateToken = require("../middleware/authenticateToken");
 const router = express.Router();
@@ -59,30 +60,43 @@ router.post("/reportPost", authenticateToken, async (req, res) => {
   }
 });
 
-router.post("/reportMessage", authenticateToken, async (req, res) => {
+// router.post("/reportMessage", authenticateToken, async (req, res) => {
+//   try {
+//     const reportData = {
+//       userId: req.user.id,
+//       reportedMessageId: req.body.reportedMessageId,
+//       reason: req.body.reason,
+//     };
+//     const reportResult = await reportMessage(reportData);
+//     if (!reportResult.isSuccess) {
+//       return res.status(reportResult.status).send({
+//         isSuccess: false,
+//         status: reportResult.status,
+//         message: reportResult.error || "Có lỗi xảy ra.",
+//       });
+//     }
+//     res.status(200).send(reportResult);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send({
+//       isSuccess: false,
+//       status: 500,
+//       message: "Có lỗi xảy ra khi báo cáo tin nhắn.",
+//     });
+//   }
+// });
+
+router.put("/resolvePost/:id", async (req, res) => {
+  const reportId = req.params.id;
+  const { action } = req.body; // action: 'hide' | 'unhide'
+
   try {
-    const reportData = {
-      userId: req.user.id,
-      reportedMessageId: req.body.reportedMessageId,
-      reason: req.body.reason,
-    };
-    const reportResult = await reportMessage(reportData);
-    if (!reportResult.isSuccess) {
-      return res.status(reportResult.status).send({
-        isSuccess: false,
-        status: reportResult.status,
-        message: reportResult.error || "Có lỗi xảy ra.",
-      });
-    }
-    res.status(200).send(reportResult);
+    const result = await resolvePostReport(reportId, action);
+    return res.status(result.status).json(result);
   } catch (error) {
-    console.error(error);
-    res.status(500).send({
-      isSuccess: false,
-      status: 500,
-      message: "Có lỗi xảy ra khi báo cáo tin nhắn.",
-    });
+    return res.status(500).json({ message: error.message });
   }
 });
+
 
 module.exports = router;

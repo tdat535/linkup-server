@@ -6,7 +6,7 @@ const Messenger = require('./messenger');
 
 const Report = sequelize.define('Report', {
   type: {
-    type: DataTypes.ENUM('user', 'post', 'message'),
+    type: DataTypes.ENUM('user', 'post'),
     allowNull: false,
   },
   reason: {
@@ -25,10 +25,6 @@ const Report = sequelize.define('Report', {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-  reportedMessageId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
   status: {
     type: DataTypes.ENUM('pending', 'finished'),
     allowNull: false,
@@ -41,6 +37,5 @@ const Report = sequelize.define('Report', {
 Report.belongsTo(User, { foreignKey: 'reporterId', as: 'reporter' });
 Report.belongsTo(User, { foreignKey: 'reportedUserId', as: 'reportedUser' });
 Report.belongsTo(MediaPost, { foreignKey: 'reportedPostId', as: 'reportedPost' });
-Report.belongsTo(Messenger, { foreignKey: 'reportedMessageId', as: 'reportedMessage' });
 
 module.exports =  Report;

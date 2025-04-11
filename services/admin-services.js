@@ -57,72 +57,71 @@ const getAllMediaPost = async () => {
   }
 };
 
-const hideMediaPost = async (postId) => {
+const hideMediaPost = async (postId, action = 'hide') => {
   try {
-    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
-    const updatedPost = await MediaPost.update(
-      { status: "inactive" }, // Cập nhật trạng thái thành 'inactive'
-      {
-        where: {
-          id: postId, // Tìm bài viết theo ID
-          status: "active", // Chỉ cập nhật các bài viết có trạng thái là 'active'
-        },
-      }
-    );
-
-    if (updatedPost[0] === 0) {
-      // Nếu không có bài viết nào được cập nhật
+    const post = await MediaPost.findByPk(postId);
+    if (!post) {
       return {
         isSuccess: false,
-        status: 400,
-        message: "Không tìm thấy bài viết với trạng thái 'active' để ẩn.",
+        status: 404,
+        message: "Không tìm thấy bài viết.",
       };
     }
+
+    await post.update({ isHidden: action === 'hide' });
 
     return {
       isSuccess: true,
       status: 200,
-      message: "Ẩn bài viết thành công",
+      message: `Bài viết đã được ${action === 'hide' ? 'ẩn' : 'hiển thị lại'}.`,
     };
   } catch (error) {
-    console.error("Error hiding media post:", error);
-    throw new Error("Error hiding media post: " + error.message);
+    return {
+      isSuccess: false,
+      status: 500,
+      message: "Lỗi khi cập nhật trạng thái bài viết.",
+    };
   }
 };
+
 
 const unHideMediaPost = async (postId) => {
   try {
-    // Cập nhật trạng thái của bài viết từ 'active' sang 'inactive'
-    const updatedPost = await MediaPost.update(
-      { status: "active" }, // Cập nhật trạng thái thành 'inactive'
-      {
-        where: {
-          id: postId, // Tìm bài viết theo ID
-          status: "inactive", // Chỉ cập nhật các bài viết có trạng thái là 'active'
-        },
-      }
-    );
+    const post = await MediaPost.findByPk(postId);
 
-    if (updatedPost[0] === 0) {
-      // Nếu không có bài viết nào được cập nhật
+    if (!post) {
+      return {
+        isSuccess: false,
+        status: 404,
+        message: "Không tìm thấy bài viết.",
+      };
+    }
+
+    if (!post.isHidden) {
       return {
         isSuccess: false,
         status: 400,
-        message:
-          "Không tìm thấy bài viết với trạng thái 'inactive' để hiện thị.",
+        message: "Bài viết đã hiển thị sẵn.",
       };
     }
+
+    await post.update({ isHidden: false });
 
     return {
       isSuccess: true,
       status: 200,
-      message: "Hiện thị bài viết thành công",
+      message: "Hiển thị bài viết thành công.",
     };
   } catch (error) {
-    console.error("Error hiding media post:", error);
-    throw new Error("Error hiding media post: " + error.message);
+    console.error("Error un-hiding media post:", error);
+    return {
+      isSuccess: false,
+      status: 500,
+      message: "Lỗi khi hiển thị lại bài viết.",
+    };
   }
 };
+
 
 const getAllUser = async () => {
   try {
@@ -285,7 +284,6 @@ const getAllReport = async () => {
         "id",
         "reportedUserId",
         "reportedPostId",
-        "reportedMessageId",
         "reason",
         "type",
         "status",
@@ -308,11 +306,6 @@ const getAllReport = async () => {
           as: "reportedPost",
           attributes: ["id", "content"],
         },
-        {
-          model: Messenger,
-          as: "reportedMessage",
-          attributes: ["id", "content"],
-        },
       ],
     });
 
@@ -324,8 +317,6 @@ const getAllReport = async () => {
         reportedTarget = report.reportedUser;
       } else if (report.type === "post") {
         reportedTarget = report.reportedPost;
-      } else if (report.type === "message") {
-        reportedTarget = report.reportedMessage;
       }
 
       return {
