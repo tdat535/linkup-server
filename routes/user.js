@@ -6,11 +6,9 @@ const {
   useSearch,
   logout,
   userProfile,
-  getAllUser,
-  hideUser,
-  unHideUser,
   getUserDevices,
   logoutSpecificDevice,
+  updateProfile,
 } = require("../services/user-services");
 const authenticateToken = require("../middleware/authenticateToken"); // Đảm bảo đường dẫn đúng
 const router = express.Router();
@@ -189,6 +187,51 @@ router.get("/profile", authenticateToken, async (req, res) => {
     const userId = Number(req.query.userId); // ID của người cần xem
     const currentUserId = req.user.id; // Lấy từ JWT (đã là number)
     const result = await userProfile(userId, currentUserId);
+
+    if (!result.isSuccess) {
+      return res.status(result.status).send({
+        isSuccess: false,
+        status: result.status,
+        message: result.error || "Có lỗi xảy ra.",
+      });
+    }
+    res.status(200).send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      isSuccess: false,
+      status: 500,
+      message: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+    });
+  }
+});
+
+const multer = require("multer");
+
+const storage = multer.memoryStorage(); // Lưu file vào bộ nhớ để upload lên Cloudinary
+const upload = multer({ storage: storage });
+
+router.put("/updateProfile", authenticateToken, upload.single("file"), async (req, res) => {
+  try {
+
+    let filePath = null;
+      if (req.file) {
+        filePath = req.file;
+      }
+
+      const { username, phonenumber, email, gender } = req.body
+
+      const updatedData = {
+        username,
+        phonenumber,
+        email,
+        gender,
+        avatar: filePath
+      };
+
+    const userId = req.user.id; // Lấy từ JWT (đã là number)
+
+    const result = await updateProfile(userId, updatedData);
 
     if (!result.isSuccess) {
       return res.status(result.status).send({

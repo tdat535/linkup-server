@@ -1,12 +1,12 @@
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-
 const User = require("../models/user"); // Assuming you have a User model
 const RefreshToken = require("../models/refreshToken");
 const Follow = require("../models/follow");
 const MediaPost = require("../models/mediaPost");
 const { Op } = require("sequelize");
+const cloudinary = require("../config/cloudinary");
 
 const { getFollow } = require("./follow-services");
 
@@ -420,6 +420,113 @@ const userProfile = async (userId, currentUserId) => {
   }
 };
 
+const updateProfile = async (userId, updatedData) => {
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return {
+        isSuccess: false,
+        status: 404,
+        error: "Không tìm thấy người dùng",
+      };
+    }
+
+    // Kiểm tra username có chứa khoảng trắng
+    if (updatedData.username && /\s/.test(updatedData.username)) {
+      return {
+        isSuccess: false,
+        status: 400,
+        error: "Username không được chứa khoảng trắng",
+      };
+    }
+
+    // Kiểm tra email hợp lệ
+    if (updatedData.email && !updatedData.email.endsWith("@gmail.com")) {
+      return {
+        isSuccess: false,
+        status: 400,
+        error: "Email sai định dạng",
+      };
+    }
+
+    // Kiểm tra số điện thoại hợp lệ
+    if (
+      updatedData.phonenumber &&
+      (updatedData.phonenumber.length < 10 || updatedData.phonenumber.length > 11)
+    ) {
+      return {
+        isSuccess: false,
+        status: 400,
+        error: "Số điện thoại sai định dạng",
+      };
+    }
+
+    // Upload avatar mới nếu có file
+    let avatarUrl = user.avatar;
+
+    if (updatedData.avatar && updatedData.avatar.buffer) {
+      const uploadResponse = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "User-avatar",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) {
+              console.error("Lỗi upload avatar:", error);
+              reject("Lỗi tải avatar lên Cloudinary");
+            } else {
+              resolve(result);
+            }
+          }
+        );
+    
+        const bufferStream = new stream.PassThrough();
+        bufferStream.end(updatedData.avatar.buffer);
+        bufferStream.pipe(uploadStream);
+      });
+    
+      if (uploadResponse && uploadResponse.secure_url) {
+        avatarUrl = uploadResponse.secure_url;
+      } else {
+        console.error("Không lấy được URL từ Cloudinary!");
+      }
+    }
+    
+
+    // Cập nhật thông tin
+    await user.update({
+      username: updatedData.username || user.username,
+      email: updatedData.email || user.email,
+      phonenumber: updatedData.phonenumber || user.phonenumber,
+      gender: updatedData.gender || user.gender,
+      avatar: avatarUrl,
+    });
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Cập nhật thông tin thành công",
+      data: {
+        UserId: user.id,
+        username: user.username,
+        email: user.email,
+        phonenumber: user.phonenumber,
+        gender: user.gender,
+        avatar: user.avatar,
+      },
+    };
+  } catch (error) {
+    console.error("Lỗi updateProfile:", error);
+    return {
+      isSuccess: false,
+      status: 500,
+      error: "Lỗi khi cập nhật thông tin",
+    };
+  }
+};
+
+
 module.exports = {
   register,
   login,
@@ -430,4 +537,5 @@ module.exports = {
   getUserDevices,
   logoutSpecificDevice,
   userProfile,
+  updateProfile
 };

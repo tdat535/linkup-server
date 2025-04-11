@@ -1,17 +1,10 @@
 const MediaPost = require("../models/mediaPost"); // Assuming you have a User model
 const Follow = require("../models/follow");
 const User = require("../models/user");
-const cloudinary = require("cloudinary").v2;
 const { fn, col, literal } = require("sequelize");
 const Like = require("../models/like");
 const Comment = require("../models/comment");
-
-// Cấu hình Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, // Lấy từ Cloudinary Console
-  api_key: process.env.CLOUDINARY_API_KEY, // Lấy từ Cloudinary Console
-  api_secret: process.env.CLOUDINARY_API_SECRET, // Lấy từ Cloudinary Console
-});
+const cloudinary = require("../config/cloudinary");
 
 const createMediaPost = async (mediaData) => {
   try {
