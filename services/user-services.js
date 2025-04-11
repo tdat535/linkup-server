@@ -222,17 +222,14 @@ const generateRefreshToken = (User) => {
 
 const logout = async (refreshToken) => {
   try {
-    // Tìm Refresh Token trong cơ sở dữ liệu
     const existingToken = await RefreshToken.findOne({
       where: { token: refreshToken },
     });
 
-    // Nếu không tìm thấy token
     if (!existingToken) {
       return { error: "Không tìm thấy Refresh Token", status: 404 };
     }
 
-    // Xóa refresh token khỏi cơ sở dữ liệu
     await existingToken.destroy();
 
     return {
@@ -420,7 +417,7 @@ const userProfile = async (userId, currentUserId) => {
   }
 };
 
-const updateProfile = async (userId, updatedData) => {
+const updateProfile = async (userId, updatedData, file) => {
   try {
     const user = await User.findByPk(userId);
     if (!user) {
@@ -464,42 +461,39 @@ const updateProfile = async (userId, updatedData) => {
     // Upload avatar mới nếu có file
     let avatarUrl = user.avatar;
 
-    if (updatedData.avatar && updatedData.avatar.buffer) {
-      const uploadResponse = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
+    if (file && file.buffer) {
+      console.log('🟢 Có file được gửi lên');
+    
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
           {
             folder: "User-avatar",
             resource_type: "image",
           },
           (error, result) => {
             if (error) {
-              console.error("Lỗi upload avatar:", error);
-              reject("Lỗi tải avatar lên Cloudinary");
+              console.error('❌ Lỗi upload:', error);
+              reject(error);
             } else {
+              console.log('✅ Upload thành công:', result.secure_url);
               resolve(result);
             }
           }
-        );
-    
-        const bufferStream = new require("stream").PassThrough();
-        bufferStream.end(updatedData.file.buffer);
-        bufferStream.pipe(uploadStream);
+        ).end(file.buffer);
       });
     
-      if (uploadResponse && uploadResponse.secure_url) {
-        avatarUrl = uploadResponse.secure_url;
-      } else {
-        console.error("Không lấy được URL từ Cloudinary!");
-      }
+      avatarUrl = uploadResult.secure_url;
+    } else {
+      console.log('⚠️ Không có file hoặc file.buffer');
     }
     
 
-    // Cập nhật thông tin
+    // Cập nhật thông tin người dùng
     await user.update({
       username: updatedData.username || user.username,
       email: updatedData.email || user.email,
       phonenumber: updatedData.phonenumber || user.phonenumber,
-      gender: updatedData.gender || user.gender,
+      realname: updatedData.realname || user.realname,
       avatar: avatarUrl,
     });
 
@@ -507,25 +501,24 @@ const updateProfile = async (userId, updatedData) => {
       isSuccess: true,
       status: 200,
       message: "Cập nhật thông tin thành công",
-      data: {
-        UserId: user.id,
+      user: {
+        id: user.id,
         username: user.username,
         email: user.email,
         phonenumber: user.phonenumber,
-        gender: user.gender,
+        realname: user.realname,
         avatar: user.avatar,
       },
     };
   } catch (error) {
-    console.error("Lỗi updateProfile:", error);
+    console.error("Lỗi khi cập nhật hồ sơ:", error);
     return {
       isSuccess: false,
       status: 500,
-      error: "Lỗi khi cập nhật thông tin",
+      error: "Lỗi server khi cập nhật hồ sơ",
     };
   }
 };
-
 
 module.exports = {
   register,

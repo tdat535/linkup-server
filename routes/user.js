@@ -134,8 +134,17 @@ router.post("/refresh", async (req, res) => {
 
 router.post("/logout", async (req, res) => {
   try {
-    // Kiểm tra xem refreshToken có được gửi từ client không
-    const { refreshToken } = req.body;
+    // 👇 Lấy refreshToken từ cookie
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(400).send({
+        isSuccess: false,
+        status: 400,
+        message: "Không tìm thấy Refresh Token trong cookie.",
+      });
+    }
+
     const result = await logout(refreshToken);
 
     if (!result.isSuccess) {
@@ -145,13 +154,17 @@ router.post("/logout", async (req, res) => {
         message: result.error || "Có lỗi xảy ra.",
       });
     }
-    
-    res.clearCookie("refreshToken");
+
+    // 👇 Xóa cookie refreshToken
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
 
     res.status(200).send(result);
-
   } catch (error) {
-    console.error(error);
+    console.error("Logout Error:", error);
     res.status(500).send({
       isSuccess: false,
       status: 500,
@@ -205,33 +218,29 @@ router.get("/profile", authenticateToken, async (req, res) => {
     });
   }
 });
-
-const multer = require("multer");
-
-const storage = multer.memoryStorage(); // Lưu file vào bộ nhớ để upload lên Cloudinary
-const upload = multer({ storage: storage });
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 router.put("/updateProfile", authenticateToken, upload.single("avatar"), async (req, res) => {
   try {
-
     let filePath = null;
-      if (req.file) {
-        filePath = req.file;
-      }
+    if (req.file) {
+      filePath = req.file;
+    }
 
-      const { username, phonenumber, email, gender } = req.body
+    const { username, phonenumber, email, gender } = req.body;
 
-      const updatedData = {
-        username,
-        phonenumber,
-        email,
-        gender,
-        avatar: filePath
-      };
+    const updatedData = {
+      username,
+      phonenumber,
+      email,
+      gender,
+    };
 
-    const userId = req.user.id; // Lấy từ JWT (đã là number)
+    const userId = req.user.id;
 
-    const result = await updateProfile(userId, updatedData);
+    const result = await updateProfile(userId, updatedData, filePath); 
 
     if (!result.isSuccess) {
       return res.status(result.status).send({
@@ -240,6 +249,7 @@ router.put("/updateProfile", authenticateToken, upload.single("avatar"), async (
         message: result.error || "Có lỗi xảy ra.",
       });
     }
+
     res.status(200).send(result);
   } catch (error) {
     console.error(error);
@@ -250,5 +260,6 @@ router.put("/updateProfile", authenticateToken, upload.single("avatar"), async (
     });
   }
 });
+
 
 module.exports = router;
