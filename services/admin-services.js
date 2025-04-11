@@ -68,7 +68,7 @@ const hideMediaPost = async (postId, action = 'hide') => {
       };
     }
 
-    await post.update({ isHidden: action === 'hide' });
+    await post.update({ status: action === 'hide' ? 'inactive' : 'active' });
 
     return {
       isSuccess: true,

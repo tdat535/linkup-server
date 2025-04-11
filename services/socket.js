@@ -295,8 +295,7 @@ const initSocket = (server) => {
         console.error("Lỗi khi xử lý follow:", error);
       }
     });
-    
-
+  
     // NEW POST CREATED
     socket.on("newPost", async (postData) => {
       const { postId, userId } = postData;
