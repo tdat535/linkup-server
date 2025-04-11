@@ -1,5 +1,5 @@
 const express = require("express");
-const { createFollow, getFollow, acceptFollow } = require("../services/follow-services");
+const { createFollow, getFollow, unfollow } = require("../services/follow-services");
 const authenticateToken = require('../middleware/authenticateToken'); // Đảm bảo đường dẫn đúng
 
 const router = express.Router();
@@ -43,34 +43,26 @@ router.get("/getFollow", authenticateToken, async (req, res) => {
     }
 });
 
-// Route để chấp nhận yêu cầu theo dõi
-// router.post("/acceptFollow", authenticateToken, async (req, res) => {  
-//     try {
-//         const followData = {ê
-//             followerId: req.user.id,
-//             followingId: req.body.followingId
-//         }
-//         const FollowResponse = await acceptFollow(followData);
-
-//         if (FollowResponse.error) {
-//             return res.status(FollowResponse.status).send({
-//                 isSuccess: false,
-//                 status: FollowResponse.status,
-//                 message: FollowResponse.error
-//             });
-//         }
-
-//         res.status(200).send({
-//             isSuccess: true,
-//             status: 200,
-//             message: FollowResponse.message,
-//             data: FollowResponse,
-//         });
-//     } catch (error) {
-//         res.status(400).send('Something went wrong!');
-//         console.log(error);    
-//     }
-// });
-
-
+router.put("/unfollow", authenticateToken, async (req, res) => {
+    try {
+      const followerId = req.user.id;
+      const followingId = req.body.followingId;
+  
+      const result = await unfollow(followerId, followingId);
+  
+      if (!result.isSuccess) {
+        return res.status(result.status).send({
+          isSuccess: false,
+          status: result.status,
+          message: result.error || "Có lỗi xảy ra.",
+        });
+      }
+  
+      res.status(200).send(result);
+    } catch (error) {
+      console.log(error);
+      res.status(400).send('Something went wrong!');
+    }
+  });
+  
 module.exports = router;

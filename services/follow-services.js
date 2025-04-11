@@ -22,7 +22,23 @@ const createFollow = async (followData) => {
     const existingFollow = await Follow.findOne({
       where: { followerId, followingId },
     });
+
+    // 👇 Nếu đã từng follow nhưng đã unfollow, cho phép follow lại
     if (existingFollow) {
+      if (existingFollow.status === 'unfollowed') {
+        existingFollow.status = 'accepted';
+        existingFollow.followedAt = new Date(); // cập nhật thời gian mới
+        await existingFollow.save();
+
+        return {
+          isSuccess: true,
+          status: 200,
+          message: "Đã follow lại thành công",
+          followId: existingFollow.id,
+        };
+      }
+
+      // Nếu vẫn đang follow, báo lỗi
       return {
         isSuccess: false,
         status: 400,
@@ -30,7 +46,7 @@ const createFollow = async (followData) => {
       };
     }
 
-    // ✅ Tạo bản ghi follow luôn với status: 'accepted'
+    // ✅ Chưa từng follow, tạo mới
     const newFollow = await Follow.create({
       followerId,
       followingId,
@@ -47,7 +63,6 @@ const createFollow = async (followData) => {
     throw new Error("Lỗi khi tạo follow: " + error.message);
   }
 };
-
 
 const getFollow = async (userId) => {
   try {
@@ -97,4 +112,37 @@ const getFollow = async (userId) => {
   }
 };
 
-module.exports = { createFollow, getFollow };
+const unfollow = async (followerId, followingId) => {
+  try {
+    const followRecord = await Follow.findOne({
+      where: { followerId, followingId },
+    });
+
+    if (!followRecord) {
+      return {
+        isSuccess: false,
+        status: 404,
+        error: "Không tìm thấy mối quan hệ follow.",
+      };
+    }
+
+    // Cập nhật status thành 'unfollowed'
+    followRecord.status = 'unfollowed';
+    await followRecord.save();
+
+    return {
+      isSuccess: true,
+      status: 200,
+      message: "Đã hủy theo dõi (unfollowed) thành công.",
+    };
+  } catch (error) {
+    console.error("Lỗi khi unfollow:", error);
+    return {
+      isSuccess: false,
+      status: 500,
+      error: "Lỗi khi hủy theo dõi.",
+    };
+  }
+};
+
+module.exports = { createFollow, getFollow, unfollow };
