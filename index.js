@@ -17,21 +17,13 @@ const server = http.createServer(app); // Tạo server HTTP
 //   allowedHeaders: ['Content-Type', 'Authorization']
 // };
 
-const corsOptions = {
+app.use(cors({
   origin: [
     "https://linkup-kappa.vercel.app",
     "http://localhost:5173"
-  ],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 200, // 👈 Cho browser cũ như IE11
-};
-
-app.use(cors(corsOptions));
-
-// 👇 BẮT BUỘC: xử lý preflight OPTIONS request cho tất cả route
-app.options('*', cors(corsOptions));
+  ], // domain frontend của bạn
+  credentials: true, // 👈 Cho phép gửi cookie
+}));
 
 app.use(express.json());
 const cookieParser = require("cookie-parser");
