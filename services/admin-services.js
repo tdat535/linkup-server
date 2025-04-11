@@ -57,7 +57,7 @@ const getAllMediaPost = async () => {
   }
 };
 
-const hideMediaPost = async (postId, action = 'hide') => {
+const hideMediaPost = async (postId, action = "hide") => {
   try {
     const post = await MediaPost.findByPk(postId);
     if (!post) {
@@ -68,12 +68,12 @@ const hideMediaPost = async (postId, action = 'hide') => {
       };
     }
 
-    await post.update({ status: action === 'hide' ? 'inactive' : 'active' });
+    await post.update({ status: action === "hide" ? "inactive" : "active" });
 
     return {
       isSuccess: true,
       status: 200,
-      message: `Bài viết đã được ${action === 'hide' ? 'ẩn' : 'hiển thị lại'}.`,
+      message: `Bài viết đã được ${action === "hide" ? "ẩn" : "hiển thị lại"}.`,
     };
   } catch (error) {
     return {
@@ -83,7 +83,6 @@ const hideMediaPost = async (postId, action = 'hide') => {
     };
   }
 };
-
 
 const unHideMediaPost = async (postId) => {
   try {
@@ -97,21 +96,14 @@ const unHideMediaPost = async (postId) => {
       };
     }
 
-    if (!post.isHidden) {
-      return {
-        isSuccess: false,
-        status: 400,
-        message: "Bài viết đã hiển thị sẵn.",
-      };
-    }
-
-    await post.update({ isHidden: false });
+    await post.update({ status: "active" });
 
     return {
       isSuccess: true,
       status: 200,
-      message: "Hiển thị bài viết thành công.",
+      message: "Bài viết đã được hiển thị lại.",
     };
+
   } catch (error) {
     console.error("Error un-hiding media post:", error);
     return {
@@ -246,8 +238,8 @@ const dashboard = async () => {
     const totalUsers = await User.count();
 
     // Đếm bài viết theo loại
-    const totalTextPosts = await MediaPost.count({ where: { type: 'post' } });
-    const totalVideoPosts = await MediaPost.count({ where: { type: 'video' } });
+    const totalTextPosts = await MediaPost.count({ where: { type: "post" } });
+    const totalVideoPosts = await MediaPost.count({ where: { type: "video" } });
 
     // Đếm comment
     const totalComments = await Comment.count();
@@ -268,9 +260,8 @@ const dashboard = async () => {
       totalVideoPosts,
       totalComments,
       totalLikes,
-      totalMessages
-    };  
-    
+      totalMessages,
+    };
   } catch (error) {
     console.error("Error hiding media post:", error);
     throw new Error("Error hiding media post: " + error.message);
@@ -288,7 +279,7 @@ const getAllReport = async () => {
         "type",
         "status",
         "createdAt",
-        "updatedAt"
+        "updatedAt",
       ],
       include: [
         {
@@ -350,5 +341,5 @@ module.exports = {
   hideUser,
   unHideUser,
   dashboard,
-  getAllReport
+  getAllReport,
 };
